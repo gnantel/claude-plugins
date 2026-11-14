@@ -25,7 +25,7 @@ def last_branch_commit_touching(base: str, path: str) -> str:
 
 
 def changed_paths() -> list[str]:
-    modified = raw_git("diff", "-z", "--name-only", "HEAD")
+    modified = raw_git("diff", "-z", "--no-renames", "--name-only", "HEAD")
     untracked = raw_git("ls-files", "-z", "--others", "--exclude-standard")
     return [path for path in (modified + untracked).split("\0") if path]
 
