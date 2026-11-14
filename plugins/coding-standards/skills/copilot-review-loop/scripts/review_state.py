@@ -22,11 +22,10 @@ def next_round(number: int | None, timeout: int) -> dict:
 
 
 def wait_for_review_of_current_head(pull: dict, timeout: int) -> tuple[dict | None, str]:
-    review, head = poll_for_review(pull, timeout)
-    if review is None:
+    head = github.current_head(pull["repo"], pull["number"])
+    if copilot_review_of(pull, head) is None:
         github.request_copilot_review(pull["number"])
-        review, head = poll_for_review(pull, timeout)
-    return review, head
+    return poll_for_review(pull, timeout)
 
 
 def poll_for_review(pull: dict, timeout: int) -> tuple[dict | None, str]:

@@ -28,7 +28,7 @@ def add_next_round_command(commands) -> None:
     command = commands.add_parser("next-round", help="Wait for Copilot's review of the PR head and report the state.")
     command.add_argument("pr", nargs="?", type=int, help="PR number (default: the current branch's PR).")
     command.add_argument("--timeout", type=int, default=DEFAULT_TIMEOUT_SECONDS,
-                         help="Seconds to wait before re-requesting the review, and again after.")
+                         help="Seconds to wait for Copilot's review after requesting it.")
     command.set_defaults(command=lambda args: review_state.next_round(args.pr, args.timeout))
 
 

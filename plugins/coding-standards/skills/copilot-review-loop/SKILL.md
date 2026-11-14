@@ -11,8 +11,9 @@ prints JSON. PR argument: `$ARGUMENTS`, or the current branch's PR if empty.
 
 Repeat for at most **5 rounds**:
 
-1. **`next-round [pr]`.** It can wait up to 30 minutes, so run it as a
-   background command. Act on its `state`:
+1. **`next-round [pr]`.** It requests Copilot's review of the current head
+   (a no-op if one is already in progress) and waits up to 15 minutes for
+   it, so run it as a background command. Act on its `state`:
    - `clean`: done, go to the report.
    - `timed_out`, `sync_needed` or `dirty_worktree`: stop and tell the user
      why.
