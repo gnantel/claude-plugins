@@ -91,3 +91,9 @@ git rev-parse HEAD > "$(git rev-parse --path-format=absolute --git-path coding-s
 Any later commit changes HEAD, so the branch needs a fresh review before the
 next PR. If this review was triggered by a blocked PR creation, create the
 PR again once the review is recorded.
+
+## 8. Start the Copilot review loop
+
+Once the PR exists, run the `coding-standards:copilot-review-loop` skill on
+it, so Copilot's automatic review is addressed without the user having to
+ask.
