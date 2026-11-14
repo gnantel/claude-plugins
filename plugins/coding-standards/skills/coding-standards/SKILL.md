@@ -26,8 +26,6 @@ The ones most often missed:
    add test-only code for testability.
 5. **G10:** organize by feature, never by layer. Put new code in the
    feature it belongs to; no top-level `services/`, `models/` or `utils/`.
-6. **G11:** write idiomatic code for the language; when unsure, work out the
-   idiomatic way first. The explicit rules above win over idiom.
 
 When you finish a change, check your own diff against these rules before
 reporting it done. For a full review, the user runs `/pre-pr`.

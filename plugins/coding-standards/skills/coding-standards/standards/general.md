@@ -221,25 +221,3 @@ src/
   requires a layout (Maven's `src/test/java`, a web framework's routes
   directory), follow it, and keep feature grouping inside it: tests mirror
   the feature packages.
-
-## G11. Write idiomatic code
-
-Use each language the way its experienced users do: its standard library,
-established idioms and conventions, rather than patterns carried over from
-another language. When unsure, work out what the idiomatic way is before
-writing the code, and follow the idioms already used in the project.
-
-Examples:
-- Java: records for data carriers, streams where they read better than
-  loops, `Optional` as a return type, try-with-resources.
-- Python: comprehensions, context managers, `pathlib`, dataclasses,
-  iterating directly instead of over indices.
-- Rust: iterators over index loops, `?` for error propagation, `Option` and
-  `Result` combinators, pattern matching, ownership instead of cloning.
-- TypeScript: optional chaining and nullish coalescing, discriminated
-  unions, `const` and immutable updates, `async`/`await` over raw promises.
-
-**Precedence:** the explicit rules in these standards win where an idiom
-conflicts with them. For example, Rust tests stay in separate files (RS4)
-even though inline test modules are idiomatic, and Python functions get no
-docstrings in applications (G6b).

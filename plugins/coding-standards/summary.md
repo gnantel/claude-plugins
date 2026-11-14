@@ -17,6 +17,3 @@ Load it before writing or changing Java, Python, Rust or TypeScript code.
 - Tests live in separate files (Rust: `#[cfg(test)] #[path = "foo_tests.rs"]
   mod tests;` beside `foo.rs`; `tests.rs` beside a `mod.rs`). Never widen visibility or add test-only code for
   testability; interfaces/traits and injection are fine.
-- Write idiomatic code for each language (its standard library and
-  established idioms); when unsure, work out the idiomatic way first. These
-  explicit rules win where an idiom conflicts with them.
