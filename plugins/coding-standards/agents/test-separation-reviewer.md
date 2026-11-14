@@ -27,7 +27,7 @@ Run git commands from the repository root as plain `git ...` commands, with no
 3. Flag, in production code touched by the change:
    - Inline test modules or test functions (Rust: `mod tests { ... }` with a
      body instead of `mod tests;`).
-   - `#[cfg(test)]` anywhere but the `mod tests;` declaration,
+   - `#[cfg(test)]` anywhere but test module declarations,
      `@VisibleForTesting`, `if TESTING`, `NODE_ENV === "test"`, test-only
      constructors, setters, flags or parameters.
    - Visibility widened in the diff (`private` → package-private/`protected`/

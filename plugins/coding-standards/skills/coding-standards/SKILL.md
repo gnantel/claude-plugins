@@ -21,9 +21,11 @@ The ones most often missed:
 2. **G6:** don't write comments; make the code clearer instead. The one
    required comment is the file header (G6a).
 3. **G7:** extract hard-to-read or compound conditions into named predicates.
-4. **G8/G9:** tests in separate files (Rust: `#[cfg(test)] mod tests;` with
-   the tests in `<module>/tests.rs`). Never widen visibility or add test-only
-   code for testability.
+4. **G8/G9:** tests in separate files (Rust: `foo_tests.rs` beside `foo.rs`
+   via `#[path]`, `tests.rs` beside a `mod.rs`). Never widen visibility or
+   add test-only code for testability.
+5. **G10:** organize by feature, never by layer. Put new code in the
+   feature it belongs to; no top-level `services/`, `models/` or `utils/`.
 
 When you finish a change, check your own diff against these rules before
 reporting it done. For a full review, the user runs `/pre-pr`.

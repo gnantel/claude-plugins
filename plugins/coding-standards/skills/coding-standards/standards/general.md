@@ -167,3 +167,57 @@ Acceptable, because it is good design rather than a test hack:
 
 If something is hard to test, that is a design signal: restructure so the
 behavior is reachable through a real public surface, then test that.
+
+## G10. Organize code by feature, not by layer
+
+Group code by the feature or domain concept it serves, not by its technical
+role. Everything one feature needs (entry points, logic, persistence,
+configuration, settings and their tests) lives together in that feature's
+directory, package or module.
+
+Bad:
+```
+src/
+  controllers/   invoice_controller, customer_controller
+  services/      invoice_service, customer_service
+  repositories/  invoice_repository, customer_repository
+  models/        invoice, customer
+  utils/
+```
+
+Good:
+```
+src/
+  invoices/      routes, invoice, late_fees, invoice_store, tests
+  customers/     routes, customer, customer_store, tests
+  money/         (shared concept used by several features)
+```
+
+- **Top-level directories are features**, never layers. Directory or package
+  names like `controllers`, `services`, `repositories`, `models`, `dto`,
+  `handlers`, `middleware`, `routes`, `utils`, `helpers` or `common` at the
+  top level are violations.
+- **Inside a feature, split by sub-concept.** A large feature may have
+  sub-modules, including a role-named one when it is a coherent part of that
+  feature (for example `viewer/renderer/`).
+- **Code used by one feature lives in that feature.** Only code shared by
+  several features moves out, into a module named for the concept it
+  represents (`money`, `clock`, `http_client`), never into a `utils` or
+  `common` grab bag.
+- **Features expose a small surface.** Judge exposure at the feature's
+  boundary, not per file: files inside a feature may expose things to each
+  other as the language requires. Other features use only the feature's
+  deliberate entry point:
+  - Java: package-private by default; `public` only for what other
+    packages use.
+  - Rust: private modules, with what other features need re-exported from
+    the feature's `mod.rs`.
+  - TypeScript: other features import only from the feature's `index.ts`,
+    which exports only what they use. Exports between files of the same
+    feature are fine.
+  - Python: other features import only what the feature's `__init__.py`
+    exposes; `_`-prefixed names stay internal.
+- **Framework-imposed locations are the exception.** Where a framework
+  requires a layout (Maven's `src/test/java`, a web framework's routes
+  directory), follow it, and keep feature grouping inside it: tests mirror
+  the feature packages.

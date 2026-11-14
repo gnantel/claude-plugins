@@ -11,6 +11,9 @@ Load it before writing or changing Java, Python, Rust or TypeScript code.
 - Comments almost never: make the code clearer instead. Every file starts
   with a short purpose comment. API doc comments only in libraries.
 - Extract hard-to-read or compound conditions into named predicates.
-- Tests live in separate files (Rust: `#[cfg(test)] mod tests;` with tests in
-  `<module>/tests.rs`). Never widen visibility or add test-only code for
+- Organize code by feature, never by layer (no top-level `services/`,
+  `controllers/`, `models/`, `utils/`). A feature keeps its own code,
+  config and tests together and exposes a small surface.
+- Tests live in separate files (Rust: `#[cfg(test)] #[path = "foo_tests.rs"]
+  mod tests;` beside `foo.rs`; `tests.rs` beside a `mod.rs`). Never widen visibility or add test-only code for
   testability; interfaces/traits and injection are fine.

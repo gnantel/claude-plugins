@@ -14,7 +14,7 @@ Personal coding style standards for Java, Python, Rust and TypeScript.
 | `skills/coding-standards/standards/` | The rules: `general.md` plus one file per language |
 | `skills/coding-standards/SKILL.md` | Loads the standards before Claude writes code |
 | `skills/pre-pr/SKILL.md` | `/coding-standards:pre-pr`: runs every enabled review plugin's reviewers in parallel |
-| `agents/*-reviewer.md` | Style reviewers (Sonnet): structure, naming, comments, test separation |
+| `agents/*-reviewer.md` | Style reviewers (Sonnet): structure, naming, comments, test separation, organization |
 | `hooks/` | Blocks PR creation by Claude until the current commit has passed `/pre-pr` |
 | `summary.md` | Short version to import into `~/.claude/CLAUDE.md` |
 

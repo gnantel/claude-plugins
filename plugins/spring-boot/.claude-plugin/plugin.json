@@ -1,0 +1,10 @@
+{
+  "name": "spring-boot",
+  "version": "0.1.0",
+  "description": "Spring Boot conventions: one Configuration per feature package, Settings records with YAML defaults, constructor injection only. Enable per project; its reviewer joins /coding-standards:pre-pr automatically.",
+  "license": "MIT",
+  "author": {
+    "name": "gnantel"
+  },
+  "keywords": ["spring-boot", "java", "code-review"]
+}

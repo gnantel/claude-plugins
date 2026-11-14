@@ -47,27 +47,31 @@ if is_plain_identifier(&token) {
 ## RS4. Tests live in a separate file (G8)
 
 Unit tests do **not** go inline in the implementation file. The
-implementation file declares the test module and nothing else:
+implementation file only declares the test module:
 
 ```rust
-// src/parser.rs
+// src/browser/commands.rs
 #[cfg(test)]
+#[path = "commands_tests.rs"]
 mod tests;
 ```
 
-The tests themselves go in `src/parser/tests.rs` (for `lib.rs`, `main.rs`
-or `mod.rs`, a sibling `tests.rs`). As a child module, it can
-`use super::*;` and reach private items, so no visibility changes are ever
-needed.
-
+- A leaf module `foo.rs` keeps its tests in a sibling `foo_tests.rs`, loaded
+  with `#[path]` as above, so the tests sit next to the code in the same
+  feature directory.
+- A `mod.rs` (or `lib.rs`/`main.rs`) declares `mod tests;` and keeps its
+  tests in a sibling `tests.rs`, or a `tests/` directory when they need
+  several files.
+- As a child module, the test module can `use super::*;` and reach private
+  items, so no visibility changes are ever needed.
 - Integration tests that use only the public API go in the crate's `tests/`
   directory.
 - An inline `#[cfg(test)] mod tests { ... }` with a body is a violation.
 
 ## RS5. No test-only code in implementation (G9)
 
-- `#[cfg(test)]` appears in production files only on the `mod tests;`
-  declaration. Never on functions, impls, fields or branches.
+- `#[cfg(test)]` appears in production files only on test module
+  declarations (`mod tests;`, `mod foo_tests;`). Never on functions, impls, fields or branches.
 - Do not widen visibility (`pub`, `pub(crate)`, `pub(super)`) for tests; the
   child test module already sees private items.
 - Test doubles come from traits: depend on a trait and implement it in the
