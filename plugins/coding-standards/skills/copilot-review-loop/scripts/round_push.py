@@ -48,10 +48,15 @@ def commit_fixups(changed_files: list[str], base: str) -> list[str]:
         target = local_git.last_branch_commit_touching(base, path)
         if target:
             local_git.git("add", "--", path, allow_failure=True)
-            local_git.git("commit", "--quiet", f"--fixup={target}", "--trailer", CO_AUTHOR_TRAILER, "--", path)
+            local_git.git("commit", "--quiet", "-m", amend_message(target), "--", path)
         else:
             unmatched.append(path)
     return unmatched
+
+
+def amend_message(target: str) -> str:
+    attributed = local_git.with_trailer(local_git.message_of(target), CO_AUTHOR_TRAILER)
+    return f"amend! {local_git.subject_of(target)}\n\n{attributed}"
 
 
 def autosquash(base: str) -> bool:

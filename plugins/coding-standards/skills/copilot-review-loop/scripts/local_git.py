@@ -30,6 +30,20 @@ def changed_paths() -> list[str]:
     return [path for path in (modified + untracked).split("\0") if path]
 
 
+def message_of(commit: str) -> str:
+    return raw_git("log", "-1", "--format=%B", commit).rstrip("\n")
+
+
+def subject_of(commit: str) -> str:
+    return git("log", "-1", "--format=%s", commit)
+
+
+def with_trailer(message: str, trailer: str) -> str:
+    result = subprocess.run(["git", "interpret-trailers", "--if-exists", "addIfDifferent", "--trailer", trailer],
+                            input=message + "\n", capture_output=True, text=True, check=True)
+    return result.stdout.rstrip("\n")
+
+
 def git(*arguments: str, allow_failure: bool = False) -> str:
     return raw_git(*arguments, allow_failure=allow_failure).strip()
 
