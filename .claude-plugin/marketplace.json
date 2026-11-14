@@ -14,6 +14,11 @@
       "name": "operational-readiness",
       "source": "./plugins/operational-readiness",
       "description": "Metrics, structured logging and resilience reviewers for services. Enable per project."
+    },
+    {
+      "name": "spring-boot",
+      "source": "./plugins/spring-boot",
+      "description": "Spring Boot conventions and reviewer: Configuration per package, Settings with YAML defaults, constructor injection. Enable per project."
     }
   ]
 }

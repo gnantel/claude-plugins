@@ -6,6 +6,7 @@ My personal Claude Code plugin marketplace (`personal`).
 |---|---|---|
 | [coding-standards](plugins/coding-standards) | Coding style rules, `/pre-pr` review, PR-creation hook | Globally |
 | [operational-readiness](plugins/operational-readiness) | Metrics, structured logging and resilience reviewers | Per project (services) |
+| [spring-boot](plugins/spring-boot) | Spring Boot conventions and reviewer | Per project (Spring Boot) |
 
 ## Install
 
@@ -28,13 +29,14 @@ Add the style summary to `~/.claude/CLAUDE.md`:
 @~/work/claude-plugins/plugins/coding-standards/summary.md
 ```
 
-Enable `operational-readiness` in a project by adding to its
+Enable the per-project plugins (only the ones that apply) by adding to its
 `.claude/settings.json`:
 
 ```json
 {
   "enabledPlugins": {
-    "operational-readiness@personal": true
+    "operational-readiness@personal": true,
+    "spring-boot@personal": true
   }
 }
 ```

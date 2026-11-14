@@ -52,4 +52,5 @@ invoices.stream().filter(this::isChargeable)
 
 ## Spring Boot
 
-Spring Boot-specific rules are still to be written (`spring-boot.md`).
+Spring Boot conventions live in the separate `spring-boot` plugin, enabled
+per project.
