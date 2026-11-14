@@ -7,6 +7,8 @@ import github
 import local_git
 import review_state
 
+CO_AUTHOR_TRAILER = "Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
+
 
 def push_round(number: int | None, round_number: int) -> dict:
     pull = github.pull_request(number)
@@ -59,4 +61,5 @@ def autosquash(base: str) -> bool:
 
 def commit_new_round(paths: list[str], round_number: int) -> None:
     local_git.git("add", "--", *paths)
-    local_git.git("commit", "--quiet", "-m", f"Address Copilot review (round {round_number})", "--", *paths)
+    message = f"Address Copilot review (round {round_number})\n\n{CO_AUTHOR_TRAILER}"
+    local_git.git("commit", "--quiet", "-m", message, "--", *paths)
