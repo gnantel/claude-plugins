@@ -102,8 +102,8 @@ def wait_for_review(args: argparse.Namespace) -> None:
 
 
 def find_copilot_review(repo: str, number: int, commit: str) -> dict | None:
-    reviews = gh_json("api", "--paginate", "--slurp", f"repos/{repo}/pulls/{number}/reviews")
-    matching = [review for page in reviews for review in page if is_copilot_review_of(review, commit)]
+    review_pages = gh_json("api", "--paginate", "--slurp", f"repos/{repo}/pulls/{number}/reviews")
+    matching = [review for page in review_pages for review in page if is_copilot_review_of(review, commit)]
     return matching[-1] if matching else None
 
 
