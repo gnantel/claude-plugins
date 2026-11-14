@@ -20,8 +20,7 @@ Arguments: `$ARGUMENTS`
   `.ts`, `.tsx`) and configuration or manifest files (`.yaml`, `.yml`,
   `.toml`, `.properties`, `pom.xml`, `package.json`), which operational
   reviewers need. Ignore generated files, lockfiles and vendored code.
-- If nothing relevant changed, say so and skip to step 7: record the review,
-  retry the PR creation if it was blocked, then continue with step 8.
+- If nothing relevant changed, say so, record the review (step 7) and stop.
 
 ## 2. Find the reviewers
 
@@ -92,9 +91,3 @@ git rev-parse HEAD > "$(git rev-parse --path-format=absolute --git-path coding-s
 Any later commit changes HEAD, so the branch needs a fresh review before the
 next PR. If this review was triggered by a blocked PR creation, create the
 PR again once the review is recorded.
-
-## 8. Start the Copilot review loop
-
-Once the PR exists, run the `coding-standards:copilot-review-loop` skill on
-it, so Copilot's automatic review is addressed without the user having to
-ask.
