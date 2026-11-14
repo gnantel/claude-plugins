@@ -1,0 +1,53 @@
+"""Command-line entry point for the Copilot review loop: next-round reports where the pull request stands, push-round commits and pushes fixes, and reply and resolve answer review threads."""
+
+import argparse
+import json
+
+import github
+import review_state
+import round_push
+
+DEFAULT_TIMEOUT_SECONDS = 900
+
+
+def main() -> None:
+    args = parse_arguments()
+    print(json.dumps(args.command(args), indent=2))
+
+
+def parse_arguments() -> argparse.Namespace:
+    parser = argparse.ArgumentParser(description=__doc__)
+    commands = parser.add_subparsers(required=True)
+    add_next_round_command(commands)
+    add_push_round_command(commands)
+    add_thread_commands(commands)
+    return parser.parse_args()
+
+
+def add_next_round_command(commands) -> None:
+    command = commands.add_parser("next-round", help="Wait for Copilot's review of the PR head and report the state.")
+    command.add_argument("pr", nargs="?", type=int, help="PR number (default: the current branch's PR).")
+    command.add_argument("--timeout", type=int, default=DEFAULT_TIMEOUT_SECONDS,
+                         help="Seconds to wait for Copilot's review after requesting it.")
+    command.set_defaults(command=lambda args: review_state.next_round(args.pr, args.timeout))
+
+
+def add_push_round_command(commands) -> None:
+    command = commands.add_parser("push-round", help="Commit and push this round's fixes in the right mode.")
+    command.add_argument("round", type=int, help="Round number, used in the commit message.")
+    command.add_argument("pr", nargs="?", type=int, help="PR number (default: the current branch's PR).")
+    command.set_defaults(command=lambda args: round_push.push_round(args.pr, args.round))
+
+
+def add_thread_commands(commands) -> None:
+    reply = commands.add_parser("reply", help="Reply to a review thread.")
+    reply.add_argument("thread", help="Review thread node ID.")
+    reply.add_argument("body", help="Reply text (Markdown).")
+    reply.set_defaults(command=lambda args: {"url": github.reply(args.thread, args.body)})
+    resolve = commands.add_parser("resolve", help="Resolve a review thread.")
+    resolve.add_argument("thread", help="Review thread node ID.")
+    resolve.set_defaults(command=lambda args: {"resolved": github.resolve(args.thread)})
+
+
+if __name__ == "__main__":
+    main()
