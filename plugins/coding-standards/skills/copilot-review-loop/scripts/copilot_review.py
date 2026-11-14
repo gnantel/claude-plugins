@@ -19,8 +19,24 @@ query($owner: String!, $name: String!, $number: Int!, $after: String) {
         pageInfo { hasNextPage endCursor }
         nodes {
           id isResolved isOutdated path line
-          comments(first: 20) { nodes { author { login } body url } }
+          comments(first: 100) {
+            pageInfo { hasNextPage endCursor }
+            nodes { author { login } body url }
+          }
         }
+      }
+    }
+  }
+}
+"""
+
+THREAD_COMMENTS_QUERY = """
+query($thread: ID!, $after: String) {
+  node(id: $thread) {
+    ... on PullRequestReviewThread {
+      comments(first: 100, after: $after) {
+        pageInfo { hasNextPage endCursor }
+        nodes { author { login } body url }
       }
     }
   }
@@ -112,7 +128,9 @@ def is_copilot_review_of(review: dict, commit: str) -> bool:
 
 
 def summarize_review(repo: str, number: int, review: dict) -> dict:
-    comments = gh_json("api", f"repos/{repo}/pulls/{number}/reviews/{review['id']}/comments")
+    comment_pages = gh_json("api", "--paginate", "--slurp",
+                            f"repos/{repo}/pulls/{number}/reviews/{review['id']}/comments")
+    comments = [comment for page in comment_pages for comment in page]
     return {
         "status": "reviewed",
         "review_id": review["id"],
@@ -133,7 +151,7 @@ def fetch_threads(repo: str, number: int) -> list[dict]:
         page = fetch_thread_page(repo, number, cursor)
         threads.extend(page["nodes"])
         if not page["pageInfo"]["hasNextPage"]:
-            return threads
+            return [with_all_comments(thread) for thread in threads]
         cursor = page["pageInfo"]["endCursor"]
 
 
@@ -145,6 +163,20 @@ def fetch_thread_page(repo: str, number: int, cursor: str | None) -> dict:
         arguments += ["-f", f"after={cursor}"]
     response = gh_json(*arguments)
     return response["data"]["repository"]["pullRequest"]["reviewThreads"]
+
+
+def with_all_comments(thread: dict) -> dict:
+    comments = thread["comments"]
+    while comments["pageInfo"]["hasNextPage"]:
+        next_page = fetch_comment_page(thread["id"], comments["pageInfo"]["endCursor"])
+        comments = {"pageInfo": next_page["pageInfo"], "nodes": comments["nodes"] + next_page["nodes"]}
+    return {**thread, "comments": comments}
+
+
+def fetch_comment_page(thread_id: str, cursor: str) -> dict:
+    response = gh_json("api", "graphql", "-f", f"query={THREAD_COMMENTS_QUERY}",
+                       "-f", f"thread={thread_id}", "-f", f"after={cursor}")
+    return response["data"]["node"]["comments"]
 
 
 def describe_thread(thread: dict) -> dict:
