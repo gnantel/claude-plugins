@@ -20,6 +20,7 @@ The helper script is `${CLAUDE_SKILL_DIR}/scripts/copilot_review.py`
 | `threads <owner/repo> <pr>` | Lists unresolved review threads, with `from_copilot` and `outdated` flags |
 | `reply <thread-id> <body>` | Replies on a thread |
 | `resolve <thread-id>` | Resolves a thread |
+| `human-reviewed <owner/repo> <pr>` | Reports whether a person has reviewed the PR: an approval or change request, a review with a written summary, a thread a person started, or a top-level PR comment. Replies inside Copilot's threads don't count, even though they are posted under the user's account |
 
 ## 1. Set up
 
@@ -36,6 +37,11 @@ Run `wait` for the head SHA. It polls for up to 15 minutes, so run it as a
 background command if your environment supports that (you are notified when
 it exits); otherwise run it in the foreground with a timeout of at least
 16 minutes.
+
+When it exits, re-read the PR's `headRefOid` before doing anything else. If
+the head changed during the wait (someone else pushed), go back to the start
+of this step with the new head: a review of the old commit says nothing
+about the current one.
 
 If it times out, Copilot probably isn't set to review new pushes. Request a
 review with `gh pr edit <pr> --add-reviewer @copilot` and wait once more. If
@@ -72,12 +78,32 @@ enabled standards):
 
 ## 5. Push the round
 
-- If you made fixes, run the project's format, lint and test commands (`just
-  fmt`, `just lint`, `just test` if a justfile exists; otherwise the
-  project's own tooling), then commit with a message like
-  `Address Copilot review (round <n>)` and push.
-- After pushing, reply on each fixed thread with `Fixed in <short-sha>:`
-  plus one line on what changed, then resolve it.
+If you made fixes, run the project's format, lint and test commands (`just
+fmt`, `just lint`, `just test` if a justfile exists; otherwise the project's
+own tooling). Then choose how to commit:
+
+- **Rewrite history** while no person has reviewed the PR yet
+  (`human-reviewed` reports `false`) and the repository allows rebase merges
+  (`gh repo view --json rebaseMergeAllowed`), since only then do the branch's
+  commits reach the default branch as they are:
+  1. Commit each fix as a fixup of the branch commit that introduced the code
+     it changes: `git commit --fixup=<sha>`, finding the commit with
+     `git log --format=%h -1 <base>..HEAD -- <file>`.
+  2. Fold them in without an editor:
+     `GIT_SEQUENCE_EDITOR=true git rebase -i --autosquash <base>`.
+  3. Push with `git push --force-with-lease`.
+  4. If the rebase hits a conflict, run `git rebase --abort`, and commit the
+     fixes as a new commit instead.
+- **New commits only** once a person has reviewed (`human-reviewed` reports
+  `true`), or when the repository only squash-merges: commit with a message
+  like `Address Copilot review (round <n>)` and push normally. **Never
+  force-push after a human review**, because it breaks "changes since your
+  last review" for them.
+
+Check `human-reviewed` again every round: the user may review at any time.
+
+After pushing, reply on each fixed thread with `Fixed in <short-sha>:`
+(the new head commit) plus one line on what changed, then resolve it.
 - If nothing changed in this round (every comment was declined, or left for
   the user), the loop is done. Copilot doesn't re-review without a new
   commit. Go to step 6.

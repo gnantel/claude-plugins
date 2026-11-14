@@ -8,6 +8,7 @@ import time
 
 COPILOT_REST_LOGIN = "copilot-pull-request-reviewer[bot]"
 COPILOT_GRAPHQL_LOGIN = "copilot-pull-request-reviewer"
+DECISIVE_REVIEW_STATES = {"APPROVED", "CHANGES_REQUESTED"}
 POLL_SECONDS = 30
 TIMED_OUT_EXIT_CODE = 3
 
@@ -21,7 +22,7 @@ query($owner: String!, $name: String!, $number: Int!, $after: String) {
           id isResolved isOutdated path line
           comments(first: 100) {
             pageInfo { hasNextPage endCursor }
-            nodes { author { login } body url }
+            nodes { author { login __typename } body url }
           }
         }
       }
@@ -36,7 +37,7 @@ query($thread: ID!, $after: String) {
     ... on PullRequestReviewThread {
       comments(first: 100, after: $after) {
         pageInfo { hasNextPage endCursor }
-        nodes { author { login } body url }
+        nodes { author { login __typename } body url }
       }
     }
   }
@@ -70,6 +71,7 @@ def parse_arguments() -> argparse.Namespace:
     add_threads_command(commands)
     add_reply_command(commands)
     add_resolve_command(commands)
+    add_human_reviewed_command(commands)
     return parser.parse_args()
 
 
@@ -98,6 +100,12 @@ def add_resolve_command(commands) -> None:
     resolve = commands.add_parser("resolve", help="Resolve a review thread.")
     resolve.add_argument("thread", help="Review thread node ID.")
     resolve.set_defaults(command=resolve_thread)
+
+
+def add_human_reviewed_command(commands) -> None:
+    human = commands.add_parser("human-reviewed", help="Report whether a person has reviewed the PR.")
+    add_pull_request_arguments(human)
+    human.set_defaults(command=print_human_review_status)
 
 
 def add_pull_request_arguments(parser: argparse.ArgumentParser) -> None:
@@ -199,6 +207,46 @@ def is_started_by_copilot(comments: list[dict]) -> bool:
 def login_of(comment: dict) -> str | None:
     author = comment.get("author")
     return author["login"] if author else None
+
+
+def print_human_review_status(args: argparse.Namespace) -> None:
+    evidence = human_review_evidence(args.repo, args.number)
+    print_json({"human_reviewed": bool(evidence), "evidence": evidence})
+
+
+def human_review_evidence(repo: str, number: int) -> list[str]:
+    return (
+        decisive_or_written_reviews(repo, number)
+        + threads_started_by_people(repo, number)
+        + conversation_comments_by_people(repo, number)
+    )
+
+
+def decisive_or_written_reviews(repo: str, number: int) -> list[str]:
+    review_pages = gh_json("api", "--paginate", "--slurp", f"repos/{repo}/pulls/{number}/reviews")
+    reviews = [review for page in review_pages for review in page]
+    return [review["html_url"] for review in reviews if is_decisive_or_written_by_person(review)]
+
+
+def is_decisive_or_written_by_person(review: dict) -> bool:
+    by_person = review["user"]["type"] == "User"
+    return by_person and (review["state"] in DECISIVE_REVIEW_STATES or bool(review["body"].strip()))
+
+
+def threads_started_by_people(repo: str, number: int) -> list[str]:
+    threads = fetch_threads(repo, number)
+    return [thread["comments"]["nodes"][0]["url"] for thread in threads if is_started_by_person(thread)]
+
+
+def is_started_by_person(thread: dict) -> bool:
+    comments = thread["comments"]["nodes"]
+    return bool(comments) and (comments[0].get("author") or {}).get("__typename") == "User"
+
+
+def conversation_comments_by_people(repo: str, number: int) -> list[str]:
+    comment_pages = gh_json("api", "--paginate", "--slurp", f"repos/{repo}/issues/{number}/comments")
+    comments = [comment for page in comment_pages for comment in page]
+    return [comment["html_url"] for comment in comments if comment["user"]["type"] == "User"]
 
 
 def reply_to_thread(args: argparse.Namespace) -> None:
