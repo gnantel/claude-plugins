@@ -23,7 +23,12 @@ Run git commands from the repository root as plain `git ...` commands, with no
 2. Get the overall layout: `git ls-files` and the source root's top-level
    directories or packages. Work out what the features are.
 3. Look at what the change adds, moves or renames
-   (`git diff --name-status <base>`), and read the new files.
+   (`git diff --name-status <base>`), then read the full content diff
+   (`git diff <base>`). Additions to existing files matter as much as new
+   files: a helper added to an existing `common` module, or an internal item
+   newly made public, is a G10 finding. Read the affected existing files
+   for context, so you can tell what the change introduced from what was
+   already there.
 4. Flag:
    - New top-level directories or packages named for a layer (`services`,
      `controllers`, `repositories`, `models`, `dto`, `handlers`,

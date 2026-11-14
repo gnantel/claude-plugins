@@ -26,14 +26,22 @@ Run git commands from the repository root as plain `git ...` commands, with no
 2. Review only `.java`, `.yaml` and `pom.xml` changes
    (`git diff <base> -- '*.java' '*.yaml' 'pom.xml'`). If none touch
    Spring code, return `No findings.`
-3. For each package the change touches, list its files and check:
+3. Use each package the change touches as context, but report only
+   violations the change introduced or modified, including wiring,
+   settings or defaults that the change newly requires (a new bean with no
+   `@Bean` method, a new settings property with no YAML default). Do not
+   report untouched code. For each touched package, check:
    - **SB1:** exactly one `@Configuration` class if it has beans, named for
      the package's concept and ending in `Configuration`.
    - **SB2:** no `@Component`/`@Service`/`@Repository` on bean classes;
-     beans are created in that package's `@Configuration`.
+     beans are created in that package's `@Configuration`. Web controllers
+     (`@Controller`, `@RestController`, `@ControllerAdvice`) are the
+     exception: they keep the annotation and must *not* also have a `@Bean`
+     method.
    - **SB3:** properties bound to `*Settings` records with
      `@ConfigurationProperties`, enabled by the package's configuration; no
-     `@Value`.
+     `@Value`. Properties documented in the class-level Javadoc, not with
+     `@param` tags.
    - **SB4:** a `<concept>.defaults.yaml` beside each top-level settings
      record, loaded with `@YamlPropertySource` on the package's
      configuration, covering every property (commented out if it must be

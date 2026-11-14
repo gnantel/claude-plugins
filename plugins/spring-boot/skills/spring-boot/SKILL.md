@@ -11,10 +11,12 @@ They extend the coding-standards Java rules and G10 (organize by feature).
 The ones most often missed:
 
 1. **SB1/SB2:** each package with beans has one `<Concept>Configuration`
-   class that creates them with `@Bean` methods. No `@Component`/`@Service`.
+   class that creates them with `@Bean` methods. No `@Component`/`@Service`;
+   only web controllers keep `@RestController` (and get no `@Bean`).
 2. **SB3/SB4:** properties bind to `*Settings` records with a
    `<concept>.defaults.yaml` beside them in `src/main/java`, loaded with
-   `@YamlPropertySource`. No `@Value`.
+   `@YamlPropertySource`. No `@Value`. Document the properties in the
+   record's class-level Javadoc, not `@param`.
 3. **SB5:** constructor injection only. `@Autowired` only in configuration
    wiring tests, never in `src/main` or plain unit tests.
 4. **SB6:** package-private unless another feature needs it.

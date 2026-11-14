@@ -50,6 +50,14 @@ class LateFeeConfiguration {
 No `@Component`, `@Service` or `@Repository` on bean classes, and no
 component scanning that relies on them.
 
+**Exception: web controllers.** Spring MVC only recognizes handler types
+annotated `@Controller` (or `@RestController`), so controllers keep that
+annotation, as do `@ControllerAdvice` classes. They are discovered by
+component scanning, so they are **not** also registered with a `@Bean`
+method (that would create a second instance). Everything else still
+applies: they live in their feature package, use constructor injection
+(SB5) and are package-private where Spring allows (SB6).
+
 ## SB3. Settings are records ending in `Settings`
 
 - Configuration properties are bound to `record`s named `*Settings`,
@@ -60,6 +68,23 @@ component scanning that relies on them.
   beans it creates. Beans receive plain values or their own settings record,
   never the whole `Environment`.
 - No `@Value`: every property goes through a `*Settings` record.
+- A settings record documents its properties in its class-level Javadoc
+  (the G6a header), not with `@param` tags. Settings records are the
+  configuration surface, so this is the one place where documenting each
+  field is expected, even in applications.
+
+```java
+/**
+ * Settings for the late-fee calculation.
+ * <ul>
+ *   <li>{@code rate}: fraction of the invoice amount charged per period</li>
+ *   <li>{@code cap}: maximum fee per invoice, in cents</li>
+ * </ul>
+ */
+@ConfigurationProperties("billing.late-fee")
+record LateFeeSettings(double rate, long cap) {
+}
+```
 
 ## SB4. Every Settings record has YAML defaults beside it
 
