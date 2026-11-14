@@ -1,0 +1,14 @@
+{
+  "name": "operational-readiness",
+  "version": "0.1.0",
+  "description": "Operational review pack for services: metrics, structured logging, and resilience of external calls. Enable per project; its reviewers join /coding-standards:pre-pr automatically.",
+  "license": "MIT",
+  "keywords": [
+    "code-review",
+    "observability",
+    "resilience"
+  ],
+  "author": {
+    "name": "gnantel"
+  }
+}

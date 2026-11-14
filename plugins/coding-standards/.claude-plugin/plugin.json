@@ -1,0 +1,14 @@
+{
+  "name": "coding-standards",
+  "version": "0.1.0",
+  "description": "Personal coding style standards: rules for Java, Python, Rust and TypeScript, the /pre-pr review that runs every enabled review plugin's reviewers, and a hook that requires it before PR creation.",
+  "keywords": [
+    "code-review",
+    "standards",
+    "style"
+  ],
+  "license": "MIT",
+  "author": {
+    "name": "gnantel"
+  }
+}

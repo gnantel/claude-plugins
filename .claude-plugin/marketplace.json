@@ -1,0 +1,19 @@
+{
+  "name": "personal",
+  "description": "Personal Claude Code plugins: coding standards and review packs.",
+  "owner": {
+    "name": "gnantel"
+  },
+  "plugins": [
+    {
+      "name": "coding-standards",
+      "source": "./plugins/coding-standards",
+      "description": "Personal coding style standards, the /pre-pr review and the PR hook. Enable globally."
+    },
+    {
+      "name": "operational-readiness",
+      "source": "./plugins/operational-readiness",
+      "description": "Metrics, structured logging and resilience reviewers for services. Enable per project."
+    }
+  ]
+}

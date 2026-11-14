@@ -1,0 +1,32 @@
+# coding-standards
+
+Personal coding style standards for Java, Python, Rust and TypeScript.
+
+## Install
+
+```
+/plugin marketplace add gnantel/claude-plugins
+/plugin install coding-standards@personal
+```
+
+| Path | Purpose |
+|---|---|
+| `skills/coding-standards/standards/` | The rules: `general.md` plus one file per language |
+| `skills/coding-standards/SKILL.md` | Loads the standards before Claude writes code |
+| `skills/pre-pr/SKILL.md` | `/coding-standards:pre-pr`: runs every enabled review plugin's reviewers in parallel |
+| `agents/*-reviewer.md` | Style reviewers (Sonnet): structure, naming, comments, test separation |
+| `hooks/` | Blocks PR creation by Claude until the current commit has passed `/pre-pr` |
+| `summary.md` | Short version to import into `~/.claude/CLAUDE.md` |
+
+## Use
+
+- Writing code: the `coding-standards` skill loads automatically.
+- Before a PR: runs automatically. When Claude creates a PR (`gh pr create`
+  or a GitHub MCP `create_pull_request` tool), the hook blocks it until the
+  current commit has been reviewed. Claude then runs the review, resolves the
+  findings with you, and retries. You can also run it yourself:
+  `/coding-standards:pre-pr` (optionally a base branch and `--fix`).
+- The reviewed commit is recorded in `.git/coding-standards-reviewed`
+  (per worktree). Any new commit needs a fresh review.
+- PRs you create yourself outside Claude (GitHub web UI, `gh` in your own
+  terminal) are not covered by the hook.
