@@ -20,7 +20,8 @@ Arguments: `$ARGUMENTS`
   `.ts`, `.tsx`) and configuration or manifest files (`.yaml`, `.yml`,
   `.toml`, `.properties`, `pom.xml`, `package.json`), which operational
   reviewers need. Ignore generated files, lockfiles and vendored code.
-- If nothing relevant changed, say so, record the review (step 7) and stop.
+- If nothing relevant changed, say so and skip to step 7: record the review,
+  retry the PR creation if it was blocked, then continue with step 8.
 
 ## 2. Find the reviewers
 

@@ -38,8 +38,11 @@ Run git commands from the repository root as plain `git ...` commands, with no
    - New `utils`/`helpers`/`common` modules, or additions to existing ones.
      Propose the concept-named module or the feature it belongs in.
    - One feature reaching into another feature's internals instead of its
-     deliberately exposed surface, and new public/exported items that only
-     their own feature uses.
+     entry point (`index.ts`, `mod.rs` re-exports, `__init__.py`, public
+     classes of a Java package), and new items added to a feature's entry
+     point that no other feature uses. Judge exposure at the feature
+     boundary: file-level exports or visibility needed between files of the
+     same feature are fine.
    - A feature's pieces (its config, settings, tests) split across the tree
      when the framework doesn't force it.
 5. Pre-existing layer-based layout is not this change's fault. Only flag it

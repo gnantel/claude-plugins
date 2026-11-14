@@ -204,10 +204,19 @@ src/
   several features moves out, into a module named for the concept it
   represents (`money`, `clock`, `http_client`), never into a `utils` or
   `common` grab bag.
-- **Features expose a small surface.** Keep a feature's internals private to
-  it (package-private in Java, private modules or `pub(crate)` re-exports in
-  Rust, unexported in TypeScript, `_`-prefixed in Python), and have other
-  features use only what it deliberately exposes.
+- **Features expose a small surface.** Judge exposure at the feature's
+  boundary, not per file: files inside a feature may expose things to each
+  other as the language requires. Other features use only the feature's
+  deliberate entry point:
+  - Java: package-private by default; `public` only for what other
+    packages use.
+  - Rust: private modules, with what other features need re-exported from
+    the feature's `mod.rs`.
+  - TypeScript: other features import only from the feature's `index.ts`,
+    which exports only what they use. Exports between files of the same
+    feature are fine.
+  - Python: other features import only what the feature's `__init__.py`
+    exposes; `_`-prefixed names stay internal.
 - **Framework-imposed locations are the exception.** Where a framework
   requires a layout (Maven's `src/test/java`, a web framework's routes
   directory), follow it, and keep feature grouping inside it: tests mirror

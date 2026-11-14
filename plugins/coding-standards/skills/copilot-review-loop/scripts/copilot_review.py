@@ -12,10 +12,11 @@ POLL_SECONDS = 30
 TIMED_OUT_EXIT_CODE = 3
 
 THREADS_QUERY = """
-query($owner: String!, $name: String!, $number: Int!) {
+query($owner: String!, $name: String!, $number: Int!, $after: String) {
   repository(owner: $owner, name: $name) {
     pullRequest(number: $number) {
-      reviewThreads(first: 100) {
+      reviewThreads(first: 100, after: $after) {
+        pageInfo { hasNextPage endCursor }
         nodes {
           id isResolved isOutdated path line
           comments(first: 20) { nodes { author { login } body url } }
@@ -127,12 +128,23 @@ def print_open_threads(args: argparse.Namespace) -> None:
 
 
 def fetch_threads(repo: str, number: int) -> list[dict]:
+    threads, cursor = [], None
+    while True:
+        page = fetch_thread_page(repo, number, cursor)
+        threads.extend(page["nodes"])
+        if not page["pageInfo"]["hasNextPage"]:
+            return threads
+        cursor = page["pageInfo"]["endCursor"]
+
+
+def fetch_thread_page(repo: str, number: int, cursor: str | None) -> dict:
     owner, name = repo.split("/")
-    response = gh_json(
-        "api", "graphql", "-f", f"query={THREADS_QUERY}",
-        "-f", f"owner={owner}", "-f", f"name={name}", "-F", f"number={number}",
-    )
-    return response["data"]["repository"]["pullRequest"]["reviewThreads"]["nodes"]
+    arguments = ["api", "graphql", "-f", f"query={THREADS_QUERY}",
+                 "-f", f"owner={owner}", "-f", f"name={name}", "-F", f"number={number}"]
+    if cursor is not None:
+        arguments += ["-f", f"after={cursor}"]
+    response = gh_json(*arguments)
+    return response["data"]["repository"]["pullRequest"]["reviewThreads"]
 
 
 def describe_thread(thread: dict) -> dict:
