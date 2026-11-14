@@ -1,9 +1,9 @@
 """Works out where a pull request stands in the Copilot review loop: waits for Copilot's review of the current head, then reports whether the loop is done, blocked, or has threads to address and how to commit the fixes."""
 
-import subprocess
 import time
 
 import github
+import local_git
 
 POLL_SECONDS = 30
 DECISIVE_REVIEW_STATES = {"APPROVED", "CHANGES_REQUESTED", "DISMISSED"}
@@ -14,8 +14,10 @@ def next_round(number: int | None, timeout: int) -> dict:
     review, head = wait_for_review_of_current_head(pull, timeout)
     if review is None:
         return {"state": "timed_out", "head": head}
-    if local_head() != head:
-        return {"state": "sync_needed", "head": head, "local_head": local_head()}
+    if local_git.head() != head:
+        return {"state": "sync_needed", "head": head, "local_head": local_git.head()}
+    if local_git.is_dirty():
+        return {"state": "dirty_worktree", "head": head}
     return review_outcome(pull, review, head)
 
 
@@ -59,9 +61,9 @@ def review_outcome(pull: dict, review: dict, head: str) -> dict:
 
 
 def commit_mode(pull: dict) -> str:
-    if pull["rebase_merge_allowed"] and not human_reviewed(pull["repo"], pull["number"]):
-        return "rewrite"
-    return "new-commit"
+    if not pull["rebase_merge_allowed"] or local_git.has_merge_commits(local_git.branch_base(pull["base"])):
+        return "new-commit"
+    return "new-commit" if human_reviewed(pull["repo"], pull["number"]) else "rewrite"
 
 
 def human_reviewed(repo: str, number: int) -> bool:
@@ -106,6 +108,3 @@ def thread_url(thread: dict) -> str | None:
     comments = thread["comments"]["nodes"]
     return comments[0]["url"] if comments else None
 
-
-def local_head() -> str:
-    return subprocess.run(["git", "rev-parse", "HEAD"], capture_output=True, text=True).stdout.strip()

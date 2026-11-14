@@ -14,7 +14,8 @@ Repeat for at most **5 rounds**:
 1. **`next-round [pr]`.** It can wait up to 30 minutes, so run it as a
    background command. Act on its `state`:
    - `clean`: done, go to the report.
-   - `timed_out` or `sync_needed`: stop and tell the user why.
+   - `timed_out`, `sync_needed` or `dirty_worktree`: stop and tell the user
+     why.
    - `address`: continue with its `copilot_threads`.
 2. **Judge each Copilot thread** against the code and the project's standards:
    - Relevant and within this PR's scope: fix it, and keep the fix to what
