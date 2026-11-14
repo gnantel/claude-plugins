@@ -39,9 +39,14 @@ it exits); otherwise run it in the foreground with a timeout of at least
 16 minutes.
 
 When it exits, re-read the PR's `headRefOid` before doing anything else. If
-the head changed during the wait (someone else pushed), go back to the start
-of this step with the new head: a review of the old commit says nothing
-about the current one.
+the head changed during the wait (someone else pushed):
+
+1. Bring the local branch up to date with `git pull --ff-only`, so local
+   `HEAD` equals `headRefOid` again. If that fails (local commits that are
+   not on the PR), stop and ask the user to synchronize the branch. Never
+   force-push over commits you haven't seen.
+2. Go back to the start of this step with the new head: a review of the old
+   commit says nothing about the current one.
 
 If it times out, Copilot probably isn't set to review new pushes. Request a
 review with `gh pr edit <pr> --add-reviewer @copilot` and wait once more. If
@@ -92,11 +97,14 @@ own tooling). Then choose how to commit:
   2. Fold them in without an editor:
      `GIT_SEQUENCE_EDITOR=true git rebase -i --autosquash <base>`.
   3. Push with `git push --force-with-lease`.
-  4. If the rebase hits a conflict, run `git rebase --abort`, and commit the
-     fixes as a new commit instead.
+  4. If the rebase hits a conflict, run `git rebase --abort`. That restores
+     the branch with this round's fixup commits still on it, so push them as
+     they are with a normal `git push` (no force needed).
 - **New commits only** once a person has reviewed (`human-reviewed` reports
-  `true`), or when the repository only squash-merges: commit with a message
-  like `Address Copilot review (round <n>)` and push normally. **Never
+  `true`), or whenever the repository doesn't allow rebase merges (squash or
+  merge commits make the branch's history irrelevant on the default branch):
+  commit with a message like `Address Copilot review (round <n>)` and push
+  normally. **Never
   force-push after a human review**, because it breaks "changes since your
   last review" for them.
 
