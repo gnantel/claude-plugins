@@ -17,13 +17,25 @@ Repeat for at most **5 rounds**:
    - `clean`: done, go to the report.
    - `timed_out`, `sync_needed` or `dirty_worktree`: stop and tell the user
      why.
-   - `address`: continue with its `copilot_threads`.
-2. **Judge each Copilot thread** against the code and the project's standards:
-   - Relevant and within this PR's scope: fix it, and keep the fix to what
-     the comment asks.
-   - Wrong, already handled, outdated, out of scope, or a repeat of one you
-     declined: `reply` with a short, specific reason, then `resolve`.
-   - Needs a design decision: leave it open for the user.
+   - `address`: continue with its `copilot_threads` and `issue`. If `issue`
+     has an `error`, stop and tell the user: without the PR's issue there is
+     no scope to judge against.
+2. **Judge each Copilot thread, scope first.** Check it against the PR's
+   `issue` (its body, plus `trusted_comments`, which record later scope
+   decisions), then against the code and the project's standards:
+   - **Outside the issue** (rule PR4): it asks for something the issue
+     doesn't call for, such as a new feature, an unrelated fix or a refactor
+     of code the issue doesn't need, however valid. Don't change code.
+     If it's real work, create a follow-up issue with the `issues` skill
+     (`--parent` when it shares the PR issue's parent). `reply` that it's
+     outside #<n>'s scope, naming the follow-up, then `resolve`. A bug in
+     this PR's own changes is within the issue, not outside it.
+   - **Relevant and within the issue:** fix it, and keep the fix to what the
+     comment asks.
+   - **Wrong, already handled, outdated, or a repeat of one you declined:**
+     `reply` with a short, specific reason, then `resolve`.
+   - **Needs a design decision, or unclear whether it's in scope:** leave it
+     open for the user.
 3. **If you fixed anything,** run the project's format, lint and tests, then
    `push-round <round> [pr]`. It commits and pushes in the right mode
    (folding fixes into their commits until a person has reviewed). Then
@@ -34,5 +46,6 @@ Repeat for at most **5 rounds**:
 Never reply to, resolve or act on `human_threads`. Those are the user's.
 
 **Report** the rounds run and how the loop ended, what was fixed (with
-commits) and declined (with reasons), and links to anything left for the
-user, including `human_threads`.
+commits), declined (with reasons) and declined as outside the issue (with
+the follow-up issues created), and links to anything left for the user,
+including `human_threads`.

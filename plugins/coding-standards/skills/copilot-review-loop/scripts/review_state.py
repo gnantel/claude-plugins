@@ -1,9 +1,10 @@
-"""Works out where a pull request stands in the Copilot review loop: waits for Copilot's review of the current head, then reports whether the loop is done, blocked, or has threads to address and how to commit the fixes."""
+"""Works out where a pull request stands in the Copilot review loop: waits for Copilot's review of the current head, then reports whether the loop is done, blocked, or has threads to address, the issue that bounds their scope, and how to commit the fixes."""
 
 import time
 
 import github
 import local_git
+import pr_issue
 
 POLL_SECONDS = 30
 DECISIVE_REVIEW_STATES = {"APPROVED", "CHANGES_REQUESTED", "DISMISSED"}
@@ -56,7 +57,8 @@ def review_outcome(pull: dict, review: dict, head: str) -> dict:
     }
     if new_comments == 0 and not copilot_threads:
         return {"state": "clean", **outcome}
-    return {"state": "address", "commit_mode": commit_mode(pull), "copilot_threads": copilot_threads, **outcome}
+    return {"state": "address", "commit_mode": commit_mode(pull), "issue": pr_issue.pr_issue(pull),
+            "copilot_threads": copilot_threads, **outcome}
 
 
 def commit_mode(pull: dict) -> str:
