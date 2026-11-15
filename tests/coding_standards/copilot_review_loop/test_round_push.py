@@ -144,3 +144,24 @@ def test_a_local_head_that_differs_from_the_pr_is_refused(repository, pull_reque
 def test_nothing_to_push_is_refused(repository, pull_request, rewrite_mode) -> None:
     with pytest.raises(SystemExit, match="No changes to push"):
         push_round_for_pull_request(pull_request)
+
+
+def test_rewrite_drops_a_commit_that_a_deleting_fix_empties(repository, pull_request, rewrite_mode) -> None:
+    repository.commit("Add scratch", **{"scratch.py": "temporary"})
+    repository.commit("Add parser", **{"parser.py": "v1"})
+    repository.push()
+    repository.git("rm", "-q", "scratch.py")
+    assert push_round_for_pull_request(pull_request)["mode"] == "rewrite"
+    assert repository.remote_subjects() == ["Add parser"]
+    assert not local_git.is_dirty()
+
+
+def test_rewrite_drops_an_emptied_commit_and_still_folds_other_fixes(repository, pull_request, rewrite_mode) -> None:
+    repository.commit("Add scratch", **{"scratch.py": "temporary"})
+    repository.commit("Add parser", **{"parser.py": "v1"})
+    repository.push()
+    repository.git("rm", "-q", "scratch.py")
+    repository.write("parser.py", "v1 fixed")
+    assert push_round_for_pull_request(pull_request)["mode"] == "rewrite"
+    assert repository.remote_subjects() == ["Add parser"]
+    assert repository.remote_file("parser.py") == "v1 fixed"
