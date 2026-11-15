@@ -2,6 +2,7 @@
 
 import subprocess
 import sys
+from pathlib import Path
 
 
 def head() -> str:
@@ -22,6 +23,14 @@ def has_merge_commits(base: str) -> bool:
 
 def last_branch_commit_touching(base: str, path: str) -> str:
     return git("log", "--format=%H", "-1", f"{base}..HEAD", "--", path)
+
+
+def is_rebasing() -> bool:
+    return any(Path(git("rev-parse", "--git-path", name)).exists() for name in ("rebase-merge", "rebase-apply"))
+
+
+def stopped_on_emptied_commit() -> bool:
+    return git("write-tree") == git("rev-parse", "HEAD~1^{tree}", allow_failure=True)
 
 
 def changed_paths() -> list[str]:

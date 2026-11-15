@@ -60,11 +60,14 @@ def amend_message(target: str) -> str:
 
 
 def autosquash(base: str) -> bool:
-    environment = {**os.environ, "GIT_SEQUENCE_EDITOR": "true"}
-    if local_git.succeeds("rebase", "--quiet", "-i", "--autosquash", base, environment=environment):
-        return True
-    local_git.git("rebase", "--abort", allow_failure=True)
-    return False
+    environment = {**os.environ, "GIT_SEQUENCE_EDITOR": "true", "GIT_EDITOR": "true"}
+    succeeded = local_git.succeeds("rebase", "--quiet", "-i", "--autosquash", base, environment=environment)
+    while not succeeded and local_git.is_rebasing() and local_git.stopped_on_emptied_commit():
+        local_git.git("reset", "--soft", "HEAD~1")
+        succeeded = local_git.succeeds("rebase", "--continue", environment=environment)
+    if not succeeded:
+        local_git.git("rebase", "--abort", allow_failure=True)
+    return succeeded
 
 
 def commit_new_round(paths: list[str], round_number: int) -> None:
