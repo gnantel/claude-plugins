@@ -30,7 +30,8 @@ def is_rebasing() -> bool:
 
 
 def stopped_on_emptied_commit() -> bool:
-    return git("write-tree") == git("rev-parse", "HEAD~1^{tree}", allow_failure=True)
+    index_tree = git("write-tree", allow_failure=True)
+    return is_rebasing() and bool(index_tree) and index_tree == git("rev-parse", "HEAD~1^{tree}", allow_failure=True)
 
 
 def changed_paths() -> list[str]:
