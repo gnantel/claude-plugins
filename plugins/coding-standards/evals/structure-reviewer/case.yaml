@@ -1,0 +1,42 @@
+schema_version: "1.0"
+name: structure-reviewer
+description: The structure rules flag a function over the 50-line limit and a three-clause condition, and leave a simple two-clause null guard alone.
+tags: [reviewer, structure]
+runs: 1
+context:
+  scaffold_script: scaffold.sh
+execution:
+  model: sonnet
+  max_turns: 30
+  timeout_seconds: 600
+  allowed_tools: [Read, Glob, Grep, Agent, Skill, "Bash(git:*)"]
+  prompt: |
+    I'm about to open a pull request for the current branch. Review the
+    structure of its code against my coding standards: compare the branch
+    with `main`, and list each function or condition that should be
+    restructured, with its file and line. Don't edit any files.
+    If you have a dedicated reviewer agent for this, use it.
+graders:
+  - type: llm
+    name: flags the long function
+    criteria: >-
+      The response says render_invoice in billing/invoice_text.py is too long
+      (over a 50-line limit, or similar wording about its length) and proposes
+      splitting it into smaller, well-named functions.
+  - type: llm
+    name: flags the compound condition
+    criteria: >-
+      The response flags the condition
+      `customer.is_overseas and customer.vat_number and not customer.vat_exempt`
+      and proposes extracting it into a small, named predicate function.
+  - type: llm
+    name: keeps the simple null guard
+    criteria: >-
+      The response does not ask to extract `customer is not None and
+      customer.notes` into a predicate function. It says nothing against it,
+      or treats it as fine to keep inline.
+  - type: tool_used
+    name: ran the structure-reviewer
+    tool: Agent
+    input_match: structure-reviewer
+    arm: with-only

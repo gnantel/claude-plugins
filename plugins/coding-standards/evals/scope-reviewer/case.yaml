@@ -1,0 +1,54 @@
+schema_version: "1.0"
+name: scope-reviewer
+description: The scope check flags changes unrelated to the branch's issue (a rename and deployment docs) and keeps the change the issue asks for.
+tags: [reviewer, scope]
+runs: 1
+context:
+  scaffold_script: scaffold.sh
+execution:
+  model: sonnet
+  max_turns: 30
+  timeout_seconds: 600
+  allowed_tools: [Read, Glob, Grep, Agent, Skill, "Bash(git:*)"]
+  prompt: |
+    Before I open a pull request for this branch, check it for scope creep
+    against its issue. This repository isn't on GitHub, so here is issue #6 in
+    full:
+
+    ## Scope
+
+    Cap late fees at a maximum of 100.
+
+    ## Out of scope
+
+    Other changes to billing or reports.
+
+    ## Done when
+
+    `late_fee` never returns more than 100.
+
+    Compare the branch with `main` and tell me which changes belong in this
+    PR and which should be split out. Don't edit any files.
+    If you have a dedicated reviewer agent for this, use it.
+graders:
+  - type: llm
+    name: splits out the rename
+    criteria: >-
+      The response says the "Tidy up report naming" change to
+      src/reports/monthly.py is outside the issue and should be split into a
+      separate issue, branch or PR.
+  - type: llm
+    name: splits out the deployment docs
+    criteria: >-
+      The response says the deployment section added to README.md is outside
+      the issue and should be split into a separate issue, branch or PR.
+  - type: llm
+    name: keeps the late-fee cap
+    criteria: >-
+      The response keeps the change to src/fees/late_fee.py (adding
+      MAX_LATE_FEE and capping the fee) as the work that belongs in this PR.
+  - type: tool_used
+    name: ran the scope-reviewer
+    tool: Agent
+    input_match: scope-reviewer
+    arm: with-only

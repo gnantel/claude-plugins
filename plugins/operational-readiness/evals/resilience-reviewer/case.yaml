@@ -1,0 +1,42 @@
+schema_version: "1.0"
+name: resilience-reviewer
+description: The resilience rules flag an external call with no timeout, and retries of a non-idempotent payment POST without an idempotency key or backoff.
+tags: [reviewer, resilience]
+runs: 1
+context:
+  scaffold_script: scaffold.sh
+execution:
+  model: sonnet
+  max_turns: 30
+  timeout_seconds: 600
+  allowed_tools: [Read, Glob, Grep, Agent, Skill, "Bash(git:*)"]
+  prompt: |
+    I'm about to open a pull request for the current branch of this service.
+    Review how it calls external systems against my operational standards:
+    compare the branch with `main` and list what should change, with its file
+    and line. Don't edit any files.
+    If you have a dedicated reviewer agent for this, use it.
+graders:
+  - type: llm
+    name: flags the missing timeout
+    criteria: >-
+      The response says the httpx.post call has no explicit timeout and asks
+      for one.
+  - type: llm
+    name: flags the unsafe retries
+    criteria: >-
+      The response says retrying this payment capture POST is unsafe because
+      it isn't idempotent (it could capture twice), and asks for an
+      idempotency key or for not retrying it as is.
+  - type: llm
+    name: asks for backoff if retries stay
+    criteria: >-
+      If the response keeps retries on this call, it asks for them to use
+      backoff (for example exponential backoff with jitter) instead of
+      retrying immediately. If it recommends removing the retries from this
+      call, that also passes.
+  - type: tool_used
+    name: ran the resilience-reviewer
+    tool: Agent
+    input_match: resilience-reviewer
+    arm: with-only

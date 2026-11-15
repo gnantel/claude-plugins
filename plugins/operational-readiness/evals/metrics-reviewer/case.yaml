@@ -1,0 +1,36 @@
+schema_version: "1.0"
+name: metrics-reviewer
+description: The metrics rules ask for metrics on new behavior (order cancellation) and flag a metric labelled with an unbounded customer ID.
+tags: [reviewer, metrics]
+runs: 1
+context:
+  scaffold_script: scaffold.sh
+execution:
+  model: sonnet
+  max_turns: 30
+  timeout_seconds: 600
+  allowed_tools: [Read, Glob, Grep, Agent, Skill, "Bash(git:*)"]
+  prompt: |
+    I'm about to open a pull request for the current branch of this service.
+    Review its metrics against my operational standards: compare the branch
+    with `main` and list what should change, with its file and line. Don't
+    edit any files.
+    If you have a dedicated reviewer agent for this, use it.
+graders:
+  - type: llm
+    name: asks for metrics on cancellation
+    criteria: >-
+      The response says cancel_order is new behavior without metrics and asks
+      for at least a counter of cancellation outcomes (for example success and
+      failure, or cancelled versus rejected because already shipped).
+  - type: llm
+    name: flags the unbounded label
+    criteria: >-
+      The response flags the `customer_id` label on orders_viewed_total as
+      unbounded or high cardinality, and asks to remove it or replace it with a
+      label from a small, known set.
+  - type: tool_used
+    name: ran the metrics-reviewer
+    tool: Agent
+    input_match: metrics-reviewer
+    arm: with-only
