@@ -1,0 +1,41 @@
+schema_version: "1.0"
+name: logging-reviewer
+description: The logging rules flag a log message built by interpolation that leaks an email address, and accept a structured log call.
+tags: [reviewer, logging]
+runs: 1
+context:
+  scaffold_script: scaffold.sh
+execution:
+  model: sonnet
+  max_turns: 30
+  timeout_seconds: 600
+  allowed_tools: [Read, Glob, Grep, Agent, Skill, "Bash(git:*)"]
+  prompt: |
+    I'm about to open a pull request for the current branch of this service.
+    Review its logging against my operational standards: compare the branch
+    with `main` and list what should change, with its file and line. Don't
+    edit any files.
+    If you have a dedicated reviewer agent for this, use it.
+graders:
+  - type: llm
+    name: flags the interpolated message
+    criteria: >-
+      The response flags the f-string log message "Sent confirmation for
+      order ..." as not structured, and asks for a constant message with the
+      values passed as key-value fields.
+  - type: llm
+    name: flags the email address
+    criteria: >-
+      The response says the customer's email address must not be logged.
+  - type: llm
+    name: accepts the structured log
+    criteria: >-
+      The response does not call `log.info("order confirmed",
+      order_id=order.id)` unstructured, and does not say its values should be
+      passed differently. Suggestions to merge it with another log line or
+      add fields to it are fine.
+  - type: tool_used
+    name: ran the logging-reviewer
+    tool: Agent
+    input_match: logging-reviewer
+    arm: with-only

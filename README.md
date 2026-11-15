@@ -66,3 +66,21 @@ Edit the plugin's `standards/` files, bump its `version` in
 `.claude-plugin/plugin.json`, then run `/plugin marketplace update personal`.
 Rules that reviews keep flagging should become lint or ast-grep checks in the
 project template instead.
+
+## Tests and evals
+
+- **Unit tests** cover the deterministic code (the PR-review hook and the
+  Copilot review loop's scripts): `just test`. They're fast and free, so run
+  them on every change.
+- **Evals** check that the skills and reviewers behave as intended, with
+  and without the plugin: `just eval <plugin>` (for example
+  `just eval coding-standards`). Each case in a plugin's `evals/` folder
+  builds a scratch repository with a planted violation of one rule, next to
+  a look-alike the rules allow, and graders check the review. Run them when
+  a skill or reviewer changes. The whole suite costs about $2.50 and takes a
+  few minutes.
+
+The evals grant `git`, `gh` and `python3` inside the eval sandbox, which on
+Ubuntu needs `bubblewrap` and `socat` installed and an AppArmor profile for
+`bwrap` (see [sandboxing](https://code.claude.com/docs/en/sandboxing)).
+Results are written to each plugin's `evals/results/`, which git ignores.

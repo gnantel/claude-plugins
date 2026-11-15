@@ -1,0 +1,33 @@
+schema_version: "1.0"
+name: pre-pr-requires-an-issue
+description: /pre-pr stops before reviewing a branch that has no leaf issue, and offers to create one, instead of reviewing without a scope.
+tags: [pre-pr, issues]
+runs: 1
+context:
+  scaffold_script: scaffold.sh
+execution:
+  model: sonnet
+  max_turns: 30
+  timeout_seconds: 600
+  allowed_tools: [Read, Glob, Grep, Agent, Skill, "Bash(git:*)", "Bash(gh:*)", "Bash(python3:*)"]
+  prompt: |
+    Run the pre-PR review for the current branch before I open a pull
+    request.
+graders:
+  - type: llm
+    name: stops for the missing issue
+    criteria: >-
+      The response stops before reviewing the code, because the branch has no
+      issue it implements (no linked PR issue, and the branch name doesn't
+      start with an issue number). It does not present a code review of the
+      late-fee change.
+  - type: llm
+    name: offers to create the issue
+    criteria: >-
+      The response offers to create an issue for the change (or to link an
+      existing one) so the branch can be reviewed.
+  - type: tool_used
+    name: ran /pre-pr
+    tool: Skill
+    input_match: pre-pr
+    arm: with-only

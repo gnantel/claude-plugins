@@ -1,0 +1,42 @@
+schema_version: "1.0"
+name: organization-reviewer
+description: The organization rule flags a new top-level layer folder and a utils grab bag in a feature-organized codebase, and accepts a sub-concept folder inside a feature.
+tags: [reviewer, organization]
+runs: 1
+context:
+  scaffold_script: scaffold.sh
+execution:
+  model: sonnet
+  max_turns: 30
+  timeout_seconds: 600
+  allowed_tools: [Read, Glob, Grep, Agent, Skill, "Bash(git:*)"]
+  prompt: |
+    I'm about to open a pull request for the current branch. Review where its
+    new code lives against my coding standards: compare the branch with
+    `main` and say which new files or folders should be placed differently,
+    and where they should go. Don't edit any files.
+    If you have a dedicated reviewer agent for this, use it.
+graders:
+  - type: llm
+    name: moves the layer folder into the feature
+    criteria: >-
+      The response says billing/services/invoice_email_service.py should not
+      live in a top-level `services` layer folder, and proposes moving it into
+      the invoices feature (for example billing/invoices/).
+  - type: llm
+    name: flags the utils grab bag
+    criteria: >-
+      The response flags billing/utils/helpers.py (a generic `utils` or
+      `helpers` module) and proposes moving `format_cents` into the feature
+      that uses it or into a module named for its concept (such as money).
+  - type: llm
+    name: accepts the sub-concept folder
+    criteria: >-
+      The response does not ask to move billing/invoices/rendering/. It says
+      nothing against it, or treats it as a reasonable sub-concept of the
+      invoices feature.
+  - type: tool_used
+    name: ran the organization-reviewer
+    tool: Agent
+    input_match: organization-reviewer
+    arm: with-only

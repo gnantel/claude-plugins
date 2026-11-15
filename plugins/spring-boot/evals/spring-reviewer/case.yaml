@@ -1,0 +1,41 @@
+schema_version: "1.0"
+name: spring-reviewer
+description: The Spring conventions flag @Service and field injection in production code, and accept @Autowired in a configuration wiring test.
+tags: [reviewer, spring]
+runs: 1
+context:
+  scaffold_script: scaffold.sh
+execution:
+  model: sonnet
+  max_turns: 30
+  timeout_seconds: 600
+  allowed_tools: [Read, Glob, Grep, Agent, Skill, "Bash(git:*)"]
+  prompt: |
+    I'm about to open a pull request for the current branch of this Spring
+    Boot service. Review how it wires its beans against my Spring conventions:
+    compare the branch with `main` and list what should change, with its file
+    and line. Don't edit any files.
+    If you have a dedicated reviewer agent for this, use it.
+graders:
+  - type: llm
+    name: replaces @Service with a Configuration
+    criteria: >-
+      The response says InvoiceService should not use @Service, and that the
+      invoice package should instead have a @Configuration class (for example
+      InvoiceConfiguration) that creates its beans with @Bean methods.
+  - type: llm
+    name: flags field injection
+    criteria: >-
+      The response flags the @Autowired field in InvoiceService and asks for
+      constructor injection instead.
+  - type: llm
+    name: accepts @Autowired in the wiring test
+    criteria: >-
+      The response does not ask to remove @Autowired from InvoiceWiringTest.
+      It says nothing against it, or says it's acceptable in a Spring
+      configuration wiring test.
+  - type: tool_used
+    name: ran the spring-reviewer
+    tool: Agent
+    input_match: spring-reviewer
+    arm: with-only

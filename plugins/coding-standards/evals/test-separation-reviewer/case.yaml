@@ -1,0 +1,43 @@
+schema_version: "1.0"
+name: test-separation-reviewer
+description: The test-separation rules flag an idiomatic inline Rust test module and visibility widened for a test, and accept trait-based injection.
+tags: [reviewer, tests, rust]
+runs: 1
+context:
+  scaffold_script: scaffold.sh
+execution:
+  model: sonnet
+  max_turns: 30
+  timeout_seconds: 600
+  allowed_tools: [Read, Glob, Grep, Agent, Skill, "Bash(git:*)"]
+  prompt: |
+    I'm about to open a pull request for the current branch. Review how its
+    tests are organized against my coding standards: compare the branch with
+    `main` and list anything about the tests or testability that should
+    change, with its file and line. Don't edit any files.
+    If you have a dedicated reviewer agent for this, use it.
+graders:
+  - type: llm
+    name: moves the inline test module out
+    criteria: >-
+      The response says the inline `mod tests { ... }` in src/greeting.rs
+      should move to a separate file (for example a `greeting_tests.rs` loaded
+      with `#[cfg(test)] #[path = ...] mod tests;`), rather than accepting it
+      as idiomatic.
+  - type: llm
+    name: flags visibility widened for a test
+    criteria: >-
+      The response flags `pub(crate)` on `salutation` as widened only for the
+      test, and says it should stay private (a child test module can already
+      reach private items, or it can be tested through `greet`).
+  - type: llm
+    name: accepts trait-based injection
+    criteria: >-
+      The response does not object to `greet` taking a `&dyn Clock` parameter
+      so tests can pass a fixed clock. It says nothing against it or treats it
+      as good design.
+  - type: tool_used
+    name: ran the test-separation-reviewer
+    tool: Agent
+    input_match: test-separation-reviewer
+    arm: with-only

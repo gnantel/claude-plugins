@@ -1,0 +1,41 @@
+schema_version: "1.0"
+name: naming-reviewer
+description: The naming rules flag vague function and variable names and a wrapper that adds no clarity, with concrete replacements.
+tags: [reviewer, naming]
+runs: 1
+context:
+  scaffold_script: scaffold.sh
+execution:
+  model: sonnet
+  max_turns: 30
+  timeout_seconds: 600
+  allowed_tools: [Read, Glob, Grep, Agent, Skill, "Bash(git:*)"]
+  prompt: |
+    I'm about to open a pull request for the current branch. Review the names
+    it introduces against my coding standards: compare the branch with `main`
+    and list each name that should change, with its file and line and the
+    name you'd use instead. Don't edit any files.
+    If you have a dedicated reviewer agent for this, use it.
+graders:
+  - type: llm
+    name: renames the vague function
+    criteria: >-
+      The response says the function name `process` is vague and proposes a
+      specific replacement name that describes what it does (for example
+      something about totalling an order).
+  - type: llm
+    name: renames the vague variables
+    criteria: >-
+      The response flags both `data` and `res` as vague names and proposes a
+      specific replacement for each.
+  - type: llm
+    name: flags the pointless wrapper
+    criteria: >-
+      The response points out that `price_of` only calls `get_price` and adds
+      no clarity, and proposes removing one of them (keeping a single
+      well-named function).
+  - type: tool_used
+    name: ran the naming-reviewer
+    tool: Agent
+    input_match: naming-reviewer
+    arm: with-only

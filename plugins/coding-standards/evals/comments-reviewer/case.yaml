@@ -1,0 +1,47 @@
+schema_version: "1.0"
+name: comments-reviewer
+description: The comment rules flag what generic advice accepts (a missing file header, a function docstring in an application) and a restating comment, and keep a comment that explains a workaround.
+tags: [reviewer, comments]
+runs: 1
+context:
+  scaffold_script: scaffold.sh
+execution:
+  model: sonnet
+  max_turns: 30
+  timeout_seconds: 600
+  allowed_tools: [Read, Glob, Grep, Agent, Skill, "Bash(git:*)"]
+  prompt: |
+    I'm about to open a pull request for the current branch of this
+    application. Review its comments and docstrings against my coding
+    standards: compare the branch with `main` and list each one that should
+    change, with its file and line, and say which are fine as they are. Don't
+    edit any files.
+    If you have a dedicated reviewer agent for this, use it.
+graders:
+  - type: llm
+    name: flags the missing file header
+    criteria: >-
+      The response says counter/visits.py is missing a comment or docstring at
+      the top of the file stating its purpose, and asks for one to be added.
+  - type: llm
+    name: flags the docstring in an application
+    criteria: >-
+      The response asks to remove the docstring of record_visit, because
+      function docstrings aren't wanted in an application (as opposed to a
+      library), or because the names and types already say what it does.
+  - type: llm
+    name: flags the restating comment
+    criteria: >-
+      The response flags the comment "# increment the visit count for the page"
+      as restating what the code already says, and recommends removing it.
+  - type: llm
+    name: keeps the workaround comment
+    criteria: >-
+      The response keeps the comment explaining that the analytics vendor drops
+      requests sent faster than five per second: it says nothing against it, or
+      treats it as a legitimate comment explaining why the code pauses.
+  - type: tool_used
+    name: ran the comments-reviewer
+    tool: Agent
+    input_match: comments-reviewer
+    arm: with-only
