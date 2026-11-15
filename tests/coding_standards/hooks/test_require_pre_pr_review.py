@@ -59,6 +59,16 @@ def test_a_new_commit_needs_a_new_review(repository: Path) -> None:
     assert create_pr(repository) == BLOCKED
 
 
+@pytest.mark.parametrize("command", [
+    "gh \\\npr create --title T",
+    "gh pr \\\ncreate --title T",
+    "g\\\nh pr create --title T",
+    "gh pr cre\\\nate --title T",
+])
+def test_pr_creation_split_by_line_continuations_is_blocked(repository: Path, command: str) -> None:
+    assert run_hook("Bash", {"command": command}, repository) == BLOCKED
+
+
 def test_mcp_pr_creation_is_blocked_without_a_review(repository: Path) -> None:
     assert run_hook("mcp__github__create_pull_request", {"title": "T"}, repository) == BLOCKED
 
