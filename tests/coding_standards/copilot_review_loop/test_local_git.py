@@ -73,3 +73,14 @@ def test_a_trailer_is_added_after_the_body(repository) -> None:
 def test_an_existing_trailer_is_not_duplicated(repository) -> None:
     message = f"Subject\n\n{TRAILER}"
     assert local_git.with_trailer(message, TRAILER) == message
+
+
+def test_a_rebase_stopped_on_a_conflict_is_not_an_emptied_commit(repository) -> None:
+    repository.commit("Add a", **{"a.py": "base"})
+    repository.git("checkout", "-q", "-b", "other")
+    repository.commit("Other change", **{"a.py": "other"})
+    repository.git("checkout", "-q", "-")
+    repository.commit("Feature change", **{"a.py": "feature"})
+    local_git.succeeds("rebase", "other")
+    assert local_git.is_rebasing()
+    assert not local_git.stopped_on_emptied_commit()
