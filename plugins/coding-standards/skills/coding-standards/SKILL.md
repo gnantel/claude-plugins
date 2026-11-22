@@ -10,10 +10,6 @@ The full standards are in the `standards/` directory next to this file:
 - `standards/general.md`: rules for every language, thresholds and rule IDs.
 - `standards/python.md`, `standards/rust.md`, `standards/typescript.md`,
   `standards/java.md`: language specifics.
-- `standards/pull-requests.md`: how work is split into issues and pull
-  requests (PR1–PR4: one PR per leaf issue, every change starts from an
-  issue, new work becomes a new issue, no scope widening from review
-  comments).
 
 Before writing or changing code, read `general.md` and the file for the
 language you are working in. Apply the rules as you write, not afterwards.

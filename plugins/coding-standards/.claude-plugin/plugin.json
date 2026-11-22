@@ -1,7 +1,7 @@
 {
   "name": "coding-standards",
-  "version": "0.4.0",
-  "description": "Personal coding style standards: rules for Java, Python, Rust and TypeScript, the /pre-pr review that runs every enabled review plugin's reviewers, and a hook that requires it before PR creation.",
+  "version": "0.5.0",
+  "description": "Personal coding style standards: rules for Java, Python, Rust and TypeScript, and five narrow reviewers (structure, naming, comments, test separation, organization) that join /pr-workflow:pre-pr.",
   "keywords": [
     "code-review",
     "standards",

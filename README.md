@@ -4,7 +4,8 @@ My personal Claude Code plugin marketplace (`personal`).
 
 | Plugin | What it does | Enable |
 |---|---|---|
-| [coding-standards](plugins/coding-standards) | Coding style rules, `/pre-pr` review, PR-creation hook | Globally |
+| [coding-standards](plugins/coding-standards) | Coding style rules and style reviewers | Globally |
+| [pr-workflow](plugins/pr-workflow) | Issues, `/pre-pr` review, scope reviewer, PR hook, Copilot loop | Globally |
 | [operational-readiness](plugins/operational-readiness) | Metrics, structured logging and resilience reviewers | Per project (services) |
 | [spring-boot](plugins/spring-boot) | Spring Boot conventions and reviewer | Per project (Spring Boot) |
 
@@ -15,6 +16,7 @@ In Claude Code, from GitHub:
 ```
 /plugin marketplace add gnantel/claude-plugins
 /plugin install coding-standards@personal
+/plugin install pr-workflow@personal
 ```
 
 or from the local checkout, which is handier while editing the rules:
@@ -23,10 +25,11 @@ or from the local checkout, which is handier while editing the rules:
 /plugin marketplace add ~/work/claude-plugins
 ```
 
-Add the style summary to `~/.claude/CLAUDE.md`:
+Add the summaries to `~/.claude/CLAUDE.md`:
 
 ```
 @~/work/claude-plugins/plugins/coding-standards/summary.md
+@~/work/claude-plugins/plugins/pr-workflow/summary.md
 ```
 
 Enable the per-project plugins (only the ones that apply) by adding to its
@@ -47,7 +50,7 @@ and default policies).
 
 ## How reviews work
 
-`/coding-standards:pre-pr` runs every enabled agent named `*-reviewer`, from
+`/pr-workflow:pre-pr` runs every enabled agent named `*-reviewer`, from
 any plugin, in parallel. A review plugin provides:
 
 - agents named `<name>-reviewer`, each checking a narrow set of rule IDs,
@@ -57,7 +60,7 @@ any plugin, in parallel. A review plugin provides:
   `standards/` and loading them before Claude writes code.
 
 Adding a review plugin that follows this shape extends `/pre-pr` with no
-other changes. When Claude creates a PR, the coding-standards hook blocks
+other changes. When Claude creates a PR, the pr-workflow hook blocks
 it until the current commit has passed `/pre-pr`.
 
 ## Changing rules
