@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Builds a branch whose PR exists and whose Copilot loop added a commit that
-# breaks a coding-standards rule (an 80-line function). The pre-loop head is
+# breaks a coding-standards rule (an over-long function). The pre-loop head is
 # recorded in .git/pre-loop-head.
 set -euo pipefail
 
