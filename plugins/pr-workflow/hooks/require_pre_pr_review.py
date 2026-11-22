@@ -28,7 +28,11 @@ def is_pr_creation(event: dict) -> bool:
 
 def is_gh_pr_create(event: dict) -> bool:
     command = event.get("tool_input", {}).get("command", "")
-    return event.get("tool_name") == "Bash" and bool(GH_PR_CREATE.search(command))
+    return event.get("tool_name") == "Bash" and bool(GH_PR_CREATE.search(join_line_continuations(command)))
+
+
+def join_line_continuations(command: str) -> str:
+    return command.replace("\\\n", "")
 
 
 def is_mcp_pr_create(event: dict) -> bool:
