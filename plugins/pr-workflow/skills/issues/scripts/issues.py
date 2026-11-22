@@ -6,7 +6,7 @@ import re
 import subprocess
 import sys
 
-BRANCH_ISSUE_NUMBER = re.compile(r"^(\d+)-")
+BRANCH_ISSUE_NUMBER = re.compile(r"(?:^|/)(\d+)-[^/]*$")
 TRUSTED_ASSOCIATIONS = {"OWNER", "MEMBER", "COLLABORATOR"}
 ISSUE_FIELDS = "number,title,state,url,body,parent,subIssues"
 
@@ -75,9 +75,9 @@ def issue_for_branch() -> dict:
 
 
 def issue_from_branch_name(stacked: bool) -> dict:
-    branch_number = BRANCH_ISSUE_NUMBER.match(git("branch", "--show-current"))
+    branch_number = BRANCH_ISSUE_NUMBER.search(git("branch", "--show-current"))
     if branch_number is None:
-        return {"error": "No issue found: the branch has no PR closing an issue, and its name doesn't start with one."}
+        return {"error": "No issue found: the branch has no PR closing an issue, and the last segment of its name doesn't start with one."}
     found = issue(int(branch_number.group(1)))
     return {**found, "stacked": True} if stacked else found
 
