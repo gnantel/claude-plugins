@@ -22,16 +22,6 @@ def next_round(number: int | None, timeout: int) -> dict:
     return review_outcome(pull, review, head)
 
 
-def head_status(number: int | None) -> dict:
-    pull = github.pull_request(number)
-    head = github.current_head(pull["repo"], pull["number"])
-    open_threads = len([thread for thread in github.review_threads(pull["repo"], pull["number"])
-                        if not thread["isResolved"]])
-    head_reviewed = copilot_review_of(pull, head) is not None
-    return {"head": head, "head_reviewed": head_reviewed, "open_threads": open_threads,
-            "ready": head_reviewed and open_threads == 0}
-
-
 def wait_for_review_of_current_head(pull: dict, timeout: int) -> tuple[dict | None, str]:
     head = github.current_head(pull["repo"], pull["number"])
     if copilot_review_of(pull, head) is None:
@@ -119,3 +109,12 @@ def thread_url(thread: dict) -> str | None:
     comments = thread["comments"]["nodes"]
     return comments[0]["url"] if comments else None
 
+
+def head_status(number: int | None) -> dict:
+    pull = github.pull_request(number)
+    head = github.current_head(pull["repo"], pull["number"])
+    head_reviewed = copilot_review_of(pull, head) is not None
+    open_threads = len([thread for thread in github.review_threads(pull["repo"], pull["number"])
+                        if not thread["isResolved"]])
+    return {"head": head, "head_reviewed": head_reviewed, "open_threads": open_threads,
+            "ready": head_reviewed and open_threads == 0}
