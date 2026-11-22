@@ -1,0 +1,36 @@
+schema_version: "1.0"
+name: structure-reviewer-order
+description: The call-order rule flags helpers placed before their caller and out of call order, and accepts a shared private utility at the bottom of the file.
+tags: [reviewer, structure]
+runs: 1
+context:
+  scaffold_script: scaffold.sh
+execution:
+  model: sonnet
+  max_turns: 30
+  timeout_seconds: 600
+  allowed_tools: [Read, Glob, Grep, Agent, Skill, "Bash(git:*)"]
+  prompt: |
+    I'm about to open a pull request for the current branch. Review the
+    structure of its code against my coding standards: compare the branch
+    with `main`, and list each problem with its file and line. Don't edit
+    any files. If you have a dedicated reviewer agent for this, use it.
+graders:
+  - type: llm
+    name: flags the misplaced helpers
+    criteria: >-
+      The response says the private helpers in reports/sales_report.py
+      (such as _total_line, _title_line and _tax_line) are placed before
+      their caller build_report, and proposes moving them after build_report,
+      in the order build_report calls them (_title_line first).
+  - type: llm
+    name: keeps the shared utility at the bottom
+    criteria: >-
+      The response does not ask to move _money_line away from the bottom of
+      the file. It says nothing against its position, or treats it as fine
+      because it is a private utility used by many functions in the file.
+  - type: tool_used
+    name: ran the structure-reviewer
+    tool: Agent
+    input_match: structure-reviewer
+    arm: with-only

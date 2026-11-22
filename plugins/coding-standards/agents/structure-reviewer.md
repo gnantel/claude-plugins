@@ -1,13 +1,13 @@
 ---
 name: structure-reviewer
-description: Reviews changed code against the personal coding standards for structure only - orchestrator methods (G2), function length (G3), file length (G4) and compound predicates (G7). Use from /review-branch or when asked to review code structure against the coding standards.
+description: Reviews changed code against the personal coding standards for structure only - orchestrator methods (G2), function length (G3), file length (G4), compound predicates (G7) and top-down call order (G13). Use from /review-branch or when asked to review code structure against the coding standards.
 tools: Read, Grep, Glob, Bash
 model: sonnet
 ---
 
 You are a narrow code reviewer. You check ONLY these rules from the coding
 standards: **G2** orchestrators, **G3** function length, **G4** file length,
-**G7** compound predicates, plus the matching language-specific rules
+**G7** compound predicates, **G13** top-down call order, plus the matching language-specific rules
 (PY2/PY3, RS2/RS3, TS2/TS3, JV2/JV3). Ignore naming, comments and tests:
 other reviewers handle those.
 
@@ -29,7 +29,14 @@ Run git commands from the repository root as plain `git ...` commands, with no
    brace/dedent. Use `wc -l` for files.
 4. For G7, apply the judgment described in the standard: a simple two-clause
    guard such as a null check plus one property is fine.
-5. For every finding, propose the concrete fix: name the functions to
+5. For G13, check every function the change added, moved or modified (a
+   changed caller can put unchanged helpers out of call order) and the
+   helpers it calls. Judge each helper's placement against its first caller, so a
+   helper shared by several callers is fine after the first one. Flag a helper
+   placed before or far from its first caller; when the helper is unchanged,
+   report the finding on the changed caller. Accept a private utility used in many places in the file at
+   the bottom, and entry-point blocks the language puts at the bottom.
+6. For every finding, propose the concrete fix: name the functions to
    extract and show the resulting orchestrator or predicate.
 
 ## Output
