@@ -7,7 +7,7 @@ argument-hint: "[base-branch] [--fix]"
 # Submit PR
 
 Orchestrator: it only decides and delegates. Each stage is its own skill.
-If the review or PR creation stops, stop there and tell the user why. The
+If a review or PR creation stops, stop there and tell the user why. The
 Copilot loop is the exception: however it ends, including a timeout or a
 stop with a reason, go on to the report.
 
@@ -38,11 +38,23 @@ Confirm the link once the PR is retargeted to the default branch.
 
 ## 3. Run the Copilot loop
 
-Run `pr-workflow:copilot-review-loop` on the PR. Keep its report: rounds,
+Note the head commit (`git rev-parse HEAD`) as the pre-loop head. Run
+`pr-workflow:copilot-review-loop` on the PR. Keep its report: rounds,
 fixes, declined comments, follow-up issues, how it ended (including why it
 stopped, if it did) and anything left for the user.
 
-## 4. Report
+## 4. Re-review what the loop pushed
+
+Compare the pre-loop head with the current head (`git rev-parse HEAD`). If they are
+equal, the loop added no commits: skip this stage and say so in the report.
+
+If they differ, run `pr-workflow:review-branch` again on the new head,
+with the same arguments. Its findings are handled as in stage 1: fixed,
+committed and pushed, or declined by the user. Keep its outcome as its own
+stage, separate from stage 1. If it stopped on findings the user hasn't
+settled, stop and tell the user.
+
+## 5. Report
 
 State that the PR is ready for human review, with its link, or why the
 Copilot loop stopped before that. Cover:
@@ -50,4 +62,6 @@ Copilot loop stopped before that. Cover:
 - **Local review:** findings raised, fixed and declined.
 - **Copilot:** comments raised, fixed (with commits), declined (with
   reasons) and declined as outside the issue (with the follow-up issues).
+- **Re-review after Copilot:** findings raised, fixed (with commits) and
+  declined on the commits the loop added, or that the loop added none.
 - **Left for the user:** open threads, including any from people.

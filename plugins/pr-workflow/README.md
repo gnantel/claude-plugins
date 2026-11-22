@@ -14,7 +14,7 @@ creation, and the Copilot review loop.
 | Path | Purpose |
 |---|---|
 | `skills/review-branch/SKILL.md` | `/pr-workflow:review-branch`: runs every enabled review plugin's reviewers in parallel; never creates a PR |
-| `skills/submit-pr/SKILL.md` | `/pr-workflow:submit-pr`: review, create the PR, Copilot loop, then report it ready for human review |
+| `skills/submit-pr/SKILL.md` | `/pr-workflow:submit-pr`: review, create the PR, Copilot loop, re-review of the loop's commits, then report it ready for human review |
 | `skills/issues/` | Issue-first work: find or create the change's leaf issue, split work into sub-issues, with a helper script |
 | `skills/copilot-review-loop/` | `/pr-workflow:copilot-review-loop`: addresses Copilot's PR review round after round until it has no new comments |
 | `agents/scope-reviewer.md` | Reviewer (Sonnet): the diff must serve the branch's one leaf issue |
@@ -31,8 +31,9 @@ creation, and the Copilot review loop.
   time, with or without a PR: `/pr-workflow:review-branch` (optionally a base
   branch and `--fix`).
 - Start to finish: `/pr-workflow:submit-pr` runs the review, creates the PR
-  with `Closes #<n>`, runs the Copilot loop and reports the PR ready for
-  human review, with what was raised, fixed and declined.
+  with `Closes #<n>`, runs the Copilot loop, reviews again any commits the
+  loop added, and reports the PR ready for human review, with what was
+  raised, fixed and declined.
 - The Copilot review loop (inside `submit-pr`, or run it yourself). It
   waits for Copilot's review, fixes relevant comments or replies with why
   not, pushes, and repeats until Copilot's review of the latest commit has no
