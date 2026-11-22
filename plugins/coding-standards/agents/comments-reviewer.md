@@ -1,6 +1,6 @@
 ---
 name: comments-reviewer
-description: Reviews changed code against the personal coding standards for comments only - comments that should be replaced by clearer code (G6), the required file header comment (G6a) and API docs allowed only in libraries (G6b). Use from /pre-pr or when asked to review comments against the coding standards.
+description: Reviews changed code against the personal coding standards for comments only - comments that should be replaced by clearer code (G6), the required file header comment (G6a) and API docs allowed only in libraries (G6b). Use from /review-branch or when asked to review comments against the coding standards.
 tools: Read, Grep, Glob, Bash
 model: sonnet
 ---

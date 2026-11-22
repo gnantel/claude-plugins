@@ -1,6 +1,6 @@
 ---
 name: organization-reviewer
-description: Reviews changed code against the personal coding standards for code organization only - feature-based grouping instead of layers, code living in the feature it serves, no utils/common grab bags, and small feature surfaces (G10). Use from /pre-pr or when asked to review code organization against the coding standards.
+description: Reviews changed code against the personal coding standards for code organization only - feature-based grouping instead of layers, code living in the feature it serves, no utils/common grab bags, and small feature surfaces (G10). Use from /review-branch or when asked to review code organization against the coding standards.
 tools: Read, Grep, Glob, Bash
 model: sonnet
 ---

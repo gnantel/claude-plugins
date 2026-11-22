@@ -5,7 +5,7 @@ My personal Claude Code plugin marketplace (`personal`).
 | Plugin | What it does | Enable |
 |---|---|---|
 | [coding-standards](plugins/coding-standards) | Coding style rules and style reviewers | Globally |
-| [pr-workflow](plugins/pr-workflow) | Issues, `/pre-pr` review, scope reviewer, PR hook, Copilot loop | Globally |
+| [pr-workflow](plugins/pr-workflow) | Issues, branch review, PR submission, scope reviewer, PR hook, Copilot loop | Globally |
 | [operational-readiness](plugins/operational-readiness) | Metrics, structured logging and resilience reviewers | Per project (services) |
 | [spring-boot](plugins/spring-boot) | Spring Boot conventions and reviewer | Per project (Spring Boot) |
 
@@ -50,7 +50,7 @@ and default policies).
 
 ## How reviews work
 
-`/pr-workflow:pre-pr` runs every enabled agent named `*-reviewer`, from
+`/pr-workflow:review-branch` runs every enabled agent named `*-reviewer`, from
 any plugin, in parallel. A review plugin provides:
 
 - agents named `<name>-reviewer`, each checking a narrow set of rule IDs,
@@ -59,9 +59,9 @@ any plugin, in parallel. A review plugin provides:
 - a skill with the same name as the plugin, holding those rules in
   `standards/` and loading them before Claude writes code.
 
-Adding a review plugin that follows this shape extends `/pre-pr` with no
+Adding a review plugin that follows this shape extends `/review-branch` with no
 other changes. When Claude creates a PR, the pr-workflow hook blocks
-it until the current commit has passed `/pre-pr`.
+it until the current commit has passed `/review-branch`.
 
 ## Changing rules
 

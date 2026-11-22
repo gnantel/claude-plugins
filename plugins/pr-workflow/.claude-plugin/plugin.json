@@ -1,7 +1,7 @@
 {
   "name": "pr-workflow",
-  "version": "0.1.0",
-  "description": "Issue-first pull request workflow: leaf issues, the /pre-pr review that runs every enabled review plugin's reviewers, the scope reviewer, a hook that requires the review before PR creation, and the Copilot review loop.",
+  "version": "0.2.0",
+  "description": "Issue-first pull request workflow: leaf issues, the review-branch review that runs every enabled review plugin's reviewers, the submit-pr flow from review to a PR ready for human review, the scope reviewer, a hook that requires the review before PR creation, and the Copilot review loop.",
   "keywords": [
     "pull-request",
     "issues",

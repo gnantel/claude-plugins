@@ -1,0 +1,32 @@
+schema_version: "1.0"
+name: submit-pr-requires-an-issue
+description: /submit-pr stops at the review stage for a branch that has no leaf issue, and creates no PR.
+tags: [submit-pr, issues]
+runs: 1
+context:
+  scaffold_script: scaffold.sh
+execution:
+  model: sonnet
+  max_turns: 30
+  timeout_seconds: 600
+  allowed_tools: [Read, Glob, Grep, Agent, Skill, "Bash(git:*)", "Bash(gh:*)", "Bash(python3:*)"]
+  prompt: |
+    Submit the current branch as a pull request.
+graders:
+  - type: llm
+    name: stops before creating a PR
+    criteria: >-
+      The response stops because the branch has no issue it implements (no
+      linked PR issue, and the branch name doesn't start with an issue
+      number). It does not create a pull request and does not start the
+      Copilot review loop.
+  - type: llm
+    name: offers to create the issue
+    criteria: >-
+      The response offers to create an issue for the change (or to link an
+      existing one) so the branch can be submitted.
+  - type: tool_used
+    name: ran submit-pr
+    tool: Skill
+    input_match: submit-pr
+    arm: with-only

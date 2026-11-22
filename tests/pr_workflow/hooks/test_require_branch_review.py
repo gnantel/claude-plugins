@@ -1,4 +1,4 @@
-"""Tests for the PreToolUse hook that blocks pull request creation until the current commit has passed the pre-PR review."""
+"""Tests for the PreToolUse hook that blocks pull request creation until the current commit has passed the branch review."""
 
 import json
 import subprocess
@@ -7,7 +7,7 @@ from pathlib import Path
 
 import pytest
 
-HOOK = Path(__file__).parents[3] / "plugins" / "pr-workflow" / "hooks" / "require_pre_pr_review.py"
+HOOK = Path(__file__).parents[3] / "plugins" / "pr-workflow" / "hooks" / "require_branch_review.py"
 BLOCKED = 2
 ALLOWED = 0
 

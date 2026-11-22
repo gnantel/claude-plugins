@@ -13,7 +13,7 @@
     {
       "name": "pr-workflow",
       "source": "./plugins/pr-workflow",
-      "description": "Issue-first PR workflow: leaf issues, the /pre-pr review, scope reviewer, PR hook and Copilot review loop. Enable globally."
+      "description": "Issue-first PR workflow: leaf issues, the review-branch review, the submit-pr flow, scope reviewer, PR hook and Copilot review loop. Enable globally."
     },
     {
       "name": "operational-readiness",

@@ -1,6 +1,6 @@
 ---
 name: structure-reviewer
-description: Reviews changed code against the personal coding standards for structure only - orchestrator methods (G2), function length (G3), file length (G4) and compound predicates (G7). Use from /pre-pr or when asked to review code structure against the coding standards.
+description: Reviews changed code against the personal coding standards for structure only - orchestrator methods (G2), function length (G3), file length (G4) and compound predicates (G7). Use from /review-branch or when asked to review code structure against the coding standards.
 tools: Read, Grep, Glob, Bash
 model: sonnet
 ---

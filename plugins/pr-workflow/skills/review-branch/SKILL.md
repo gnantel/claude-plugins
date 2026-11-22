@@ -1,13 +1,14 @@
 ---
-name: pre-pr
-description: Review the current branch against its leaf issue with every enabled review plugin's narrow reviewer agents in parallel (coding standards always; others such as operational-readiness when the project enables them), then report consolidated findings and offer to fix them. Use when the user asks for a pre-PR or standards review, or when the pr-workflow hook blocks pull request creation.
+name: review-branch
+description: Review the current branch locally against its leaf issue with every enabled review plugin's narrow reviewer agents in parallel, report consolidated findings, fix the ones the user approves and record the review. Never creates a pull request. Use when the user asks to review a branch or check it against the standards, at any time, with or without a PR, or when the pr-workflow hook blocks pull request creation.
 argument-hint: "[base-branch] [--fix]"
 ---
 
-# Pre-PR Review
+# Review Branch
 
-Review this branch's changes before a PR is opened, so nothing reaches
-review or CI that the standards would flag.
+Review this branch's changes locally, so nothing reaches review or CI that
+the standards would flag. It works on a branch with or without a PR and
+never creates one: that is the `submit-pr` skill's job.
 
 Arguments: `$ARGUMENTS`
 
@@ -26,8 +27,8 @@ Arguments: `$ARGUMENTS`
   reviewers need. Ignore generated files, lockfiles and vendored code.
 - If no source or configuration file changed, run only
   `pr-workflow:scope-reviewer` in step 3, since scope creep happens in
-  any kind of change, then continue as usual: record the review in step 7,
-  retry the PR creation if it was blocked, and continue with step 8.
+  any kind of change, then continue as usual and record the review in
+  step 7.
 - **Issue:** find the leaf issue this branch implements with
   `python3 ${CLAUDE_PLUGIN_ROOT}/skills/issues/scripts/issues.py for-branch`
   (or the issue the user names). Stop and tell the user if there is none,
@@ -76,7 +77,7 @@ issue for it (rule PR3) and move it to its own branch and PR.
 Report in this shape:
 
 ```
-## Pre-PR review: <n> findings in <m> files
+## Branch review: <n> findings in <m> files
 
 ### <file>
 - [G2] :42 - <problem>
@@ -114,19 +115,12 @@ git rev-parse HEAD > "$(git rev-parse --path-format=absolute --git-path pr-workf
 ```
 
 Any later commit changes HEAD, so the branch needs a fresh review before the
-next PR. If this review was triggered by a blocked PR creation, create the
-PR again once the review is recorded. The PR description must include
-`Closes #<n>` for the issue from step 1. After creating the PR, confirm the
-link with `gh pr view --json closingIssuesReferences` (exactly that one
-issue), and fix the description with `gh pr edit` if it doesn't match.
+next PR.
 
-A stacked PR (based on another feature branch, not the default branch) is
-the exception: GitHub ignores closing keywords there, so the link stays
-empty. Its issue comes from the branch name (`<issue-id>-<description>`).
-Confirm the link once the PR is retargeted to the default branch.
+## 8. Report the outcome
 
-## 8. Start the Copilot review loop
-
-Once the PR exists, run the `pr-workflow:copilot-review-loop` skill on
-it, so Copilot's automatic review is addressed without the user having to
-ask.
+End with the issue, the findings raised, which were fixed (with commits) and
+which the user declined, and that the review is recorded for this commit.
+If the review was triggered by a blocked PR creation, point the user to
+`pr-workflow:submit-pr`, which creates the PR and carries it through
+Copilot's review.

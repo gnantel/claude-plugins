@@ -1,6 +1,6 @@
 ---
 name: logging-reviewer
-description: Reviews changed service code against the operational standards for logging only - structured logging (OL1), significant events logged (OL2), meaningful levels (OL3), error context logged once (OL4) and no secrets or personal data (OL5). Use from /pre-pr or when asked to review logging.
+description: Reviews changed service code against the operational standards for logging only - structured logging (OL1), significant events logged (OL2), meaningful levels (OL3), error context logged once (OL4) and no secrets or personal data (OL5). Use from /review-branch or when asked to review logging.
 tools: Read, Grep, Glob, Bash
 model: sonnet
 ---

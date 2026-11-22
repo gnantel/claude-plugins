@@ -1,6 +1,6 @@
 ---
 name: spring-reviewer
-description: Reviews changed Spring Boot code against the user's Spring conventions only - one Configuration per package (SB1), plain beans wired by @Bean (SB2), Settings records (SB3) with YAML defaults (SB4), constructor injection (SB5) and package-private visibility (SB6). Use from /pre-pr or when asked to review Spring Boot code.
+description: Reviews changed Spring Boot code against the user's Spring conventions only - one Configuration per package (SB1), plain beans wired by @Bean (SB2), Settings records (SB3) with YAML defaults (SB4), constructor injection (SB5) and package-private visibility (SB6). Use from /review-branch or when asked to review Spring Boot code.
 tools: Read, Grep, Glob, Bash
 model: sonnet
 ---

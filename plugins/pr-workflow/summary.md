@@ -14,3 +14,5 @@ Full rules: `standards/pull-requests.md` in the pr-workflow plugin.
   happens to be checked out.
 - Problems noticed in passing and follow-ups become issues. Scope decisions
   made in discussion go on the issue as a comment.
+- Review locally with `review-branch` (it never creates a PR); use
+  `submit-pr` to go from a reviewed branch to a PR ready for human review.

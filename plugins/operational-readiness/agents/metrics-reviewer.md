@@ -1,6 +1,6 @@
 ---
 name: metrics-reviewer
-description: Reviews changed service code against the operational standards for metrics only - new behavior measured (OM1), changed or removed behavior kept in sync (OM2), bounded label cardinality (OM3) and naming (OM4). Use from /pre-pr or when asked to review metrics.
+description: Reviews changed service code against the operational standards for metrics only - new behavior measured (OM1), changed or removed behavior kept in sync (OM2), bounded label cardinality (OM3) and naming (OM4). Use from /review-branch or when asked to review metrics.
 tools: Read, Grep, Glob, Bash
 model: sonnet
 ---
