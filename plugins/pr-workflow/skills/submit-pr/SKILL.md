@@ -54,7 +54,46 @@ committed and pushed, or declined by the user. Keep its outcome as its own
 stage, separate from stage 1. If it stopped on findings the user hasn't
 settled, stop and tell the user.
 
-## 5. Report
+## 5. Make the PR mergeable
+
+Run `git fetch origin`, then `gh pr view --json mergeable,mergeStateStatus`.
+If GitHub reports `MERGEABLE` and the PR is not stacked on a parent whose PR
+was squash-merged, skip this stage and say so in the report. A stacked PR
+whose parent was squash-merged goes through the steps below even when
+`MERGEABLE`, since it is judged against an obsolete base.
+GitHub may report `UNKNOWN` while it computes; ask again every 10 seconds
+for up to 2 minutes. If it is still `UNKNOWN`, don't call the PR ready:
+report that mergeability is unknown.
+
+If the PR conflicts with its base, or is stacked on a squash-merged parent:
+
+1. Stop and ask the user before rewriting anything if a person has reviewed
+   the PR, started a review thread or commented on it. Only a PR no human
+   has been involved in is rebased unasked.
+2. Verify that the PR is not from a fork (`gh pr view --json
+   isCrossRepository`) and that local `HEAD` equals its `headRefOid`; if
+   either fails, stop and tell the user. Note that SHA as the lease.
+3. Rebase the branch onto the latest base and resolve the conflicts. A
+   stacked PR whose parent was squash-merged uses
+   `git rebase --onto origin/<default> <parent's old tip>`, so the parent's
+   original commits are dropped; then retarget the PR to the default
+   branch and confirm its closing-issue link as in stage 2. Stop and ask
+   the user only when a conflict can't be resolved without a judgement call on the
+   code's intent.
+4. Run the project's tests, then push to the PR's head branch with a lease
+   bound to the verified SHA:
+   `git push --force-with-lease=<branch>:<sha> origin HEAD:<branch>`.
+5. Run stage 1 again on the new head, with `origin/<default>` (or the PR's
+   base branch, fetched) as its base argument instead of any local branch
+   name, and push any commits it produces. Then run stage 3 again on the PR
+   as usual (it takes no base argument) and stage 4 with the same base
+   argument as stage 1.
+
+Repeat this stage until GitHub reports `MERGEABLE`. Keep what the rebase and
+the repeated stages produced as their own outcome, separate from the earlier
+ones.
+
+## 6. Report
 
 State that the PR is ready for human review, with its link, or why the
 Copilot loop stopped before that. Cover:
@@ -64,4 +103,6 @@ Copilot loop stopped before that. Cover:
   reasons) and declined as outside the issue (with the follow-up issues).
 - **Re-review after Copilot:** findings raised, fixed (with commits) and
   declined on the commits the loop added, or that the loop added none.
+- **Rebase:** that the PR was already mergeable, or what conflicted, how it
+  was resolved and what the review steps raised on the rebased head.
 - **Left for the user:** open threads, including any from people.

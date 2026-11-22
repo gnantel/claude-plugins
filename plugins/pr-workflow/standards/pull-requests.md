@@ -50,8 +50,8 @@ Spring repository.
   sub-issues, one per PR, before starting. Only leaves get PRs. Nesting
   depth is the hierarchy: a parent for the goal, leaves for the units of
   work.
-- **Branch from the default branch**, named `<issue-id>-<description>`
-  (`6-issue-linked-prs`).
+- **Branch from the freshly fetched `origin/<default>`**, in its own
+  worktree, named `<issue-id>-<description>` (`6-issue-linked-prs`).
 - **The description of the PR includes `Closes #<n>`** for its one leaf
   issue.
 
@@ -75,3 +75,19 @@ to be checked out, unless the user explicitly asks for that.
 A review comment asking for something outside the issue is answered with a
 reply suggesting a follow-up issue, not implemented in this PR. The user can
 override that.
+
+## PR5. Conflicts are resolved by rebasing, before human review
+
+A PR is reported ready for human review only once GitHub reports it
+`MERGEABLE`. If its base moved on and it conflicts, rebase the branch onto
+the latest base, run the tests, push with a lease bound to the PR's verified
+head SHA, and review the new head again. PRs are squash-merged, so rewriting
+the branch loses nothing.
+
+Rebase unasked only when no person has reviewed, commented on or started a
+thread on the PR; otherwise ask the user first, since rewriting reviewed
+history is theirs to allow.
+
+A stacked PR whose parent was squash-merged uses
+`git rebase --onto origin/<default> <parent's old tip>`, which drops the
+parent's original commits, and is then retargeted to the default branch.

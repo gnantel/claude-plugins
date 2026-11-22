@@ -1,0 +1,44 @@
+schema_version: "1.0"
+name: submit-pr-rebases-conflicting-branch
+description: When the PR conflicts with a base that moved on, submit-pr rebases onto the latest origin/main, pushes with force-with-lease and reviews again before calling the PR ready.
+tags: [submit-pr]
+runs: 1
+context:
+  scaffold_script: scaffold.sh
+execution:
+  model: sonnet
+  max_turns: 40
+  timeout_seconds: 900
+  allowed_tools: [Read, Glob, Grep, Agent, Skill, "Bash(git:*)"]
+  prompt: |
+    You are in the submit-pr flow for issue #31 (cap late fees at 100). The
+    PR for branch 31-cap-late-fees is created, the Copilot loop ended clean,
+    and the re-review had nothing to do. Carry out the stage of submit-pr
+    that follows. This repository has no GitHub remote, so here is what
+    `gh pr view --json mergeable,mergeStateStatus` reports: mergeable
+    CONFLICTING, mergeStateStatus DIRTY. The project has no test suite.
+    The repository is read-only here, so don't run any command that writes
+    to it. Inspect it with read-only git commands, then give, in order, the
+    exact commands you would run for this stage (fetch, rebase, tests, push)
+    and how you would resolve any conflict. Then say which stages of
+    submit-pr run again after the push, and whether the PR can be reported ready
+    for human review at that point.
+graders:
+  - type: llm
+    name: rebases onto the latest base
+    criteria: >-
+      The response's commands fetch origin and rebase the branch onto
+      origin/main (not a merge), and it says how to resolve the conflict in
+      fees.py so the result is a single coherent definition of the late fee
+      ceiling.
+  - type: llm
+    name: force-with-lease and review again
+    criteria: >-
+      The response names `git push --force-with-lease` (not a plain or
+      --force push) as the push, and says the local review (review-branch)
+      runs again on the rebased head.
+  - type: llm
+    name: not ready until mergeable
+    criteria: >-
+      The response says the PR cannot yet be reported ready for human
+      review, and that it can be only once GitHub reports it MERGEABLE.
