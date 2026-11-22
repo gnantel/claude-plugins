@@ -1,7 +1,7 @@
 # coding-standards
 
 Personal coding style standards for Java, Python, Rust and TypeScript, with
-five narrow reviewers that join `/pr-workflow:pre-pr`.
+narrow style reviewers that join `/pr-workflow:pre-pr`.
 
 ## Install
 
@@ -14,7 +14,7 @@ five narrow reviewers that join `/pr-workflow:pre-pr`.
 |---|---|
 | `skills/coding-standards/standards/` | The rules: `general.md` plus one file per language |
 | `skills/coding-standards/SKILL.md` | Loads the standards before Claude writes code |
-| `agents/*-reviewer.md` | Reviewers (Sonnet): structure, naming, comments, test separation, organization |
+| `agents/*-reviewer.md` | Style reviewers (Sonnet), each checking a narrow set of rule IDs |
 | `summary.md` | Short version to import into `~/.claude/CLAUDE.md` |
 
 ## Use

@@ -80,9 +80,8 @@ project template instead.
   `just eval coding-standards`). Each case in a plugin's `evals/` folder
   builds a scratch repository with a planted violation of one rule, next to
   a look-alike the rules allow, and graders check the review. Run them when
-  a skill or reviewer changes. The whole suite makes 22 agent runs (11
-  cases, each with and without the plugin, one run per case) plus Sonnet
-  grading of each answer. Every run prints its cost, and `--max-cost-usd`
+  a skill or reviewer changes. Each case makes an agent run with and
+  without the plugin (one run per case), plus Sonnet grading of each answer. Every run prints its cost, and `--max-cost-usd`
   sets a ceiling.
 
 The evals grant `git`, `gh` and `python3` inside the eval sandbox, which on

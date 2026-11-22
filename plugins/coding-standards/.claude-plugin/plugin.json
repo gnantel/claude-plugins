@@ -1,7 +1,7 @@
 {
   "name": "coding-standards",
   "version": "0.5.0",
-  "description": "Personal coding style standards: rules for Java, Python, Rust and TypeScript, and five narrow reviewers (structure, naming, comments, test separation, organization) that join /pr-workflow:pre-pr.",
+  "description": "Personal coding style standards: rules for Java, Python, Rust and TypeScript, and narrow style reviewers that join /pr-workflow:pre-pr.",
   "keywords": [
     "code-review",
     "standards",
