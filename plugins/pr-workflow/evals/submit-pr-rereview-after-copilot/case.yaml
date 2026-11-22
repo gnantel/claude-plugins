@@ -11,8 +11,22 @@ execution:
   timeout_seconds: 900
   allowed_tools: [Read, Glob, Grep, Agent, Skill, "Bash(git:*)", "Bash(gh:*)", "Bash(python3:*)"]
   prompt: |
-    You are in the submit-pr flow for issue #23. The PR is created and the
-    Copilot review loop has just ended. The head before the loop is in
+    You are in the submit-pr flow for issue #6. This repository isn't on
+    GitHub, so here is issue #6 in full, and the PR is created and open:
+
+    ## Scope
+
+    Cap late fees at a maximum of 100.
+
+    ## Out of scope
+
+    Other changes to billing or reports.
+
+    ## Done when
+
+    `late_fee` never returns more than 100.
+
+    The Copilot review loop has just ended. The head before the loop is in
     .git/pre-loop-head. Carry out the stages of submit-pr that follow the
     loop, and report. Do not push or create anything.
 graders:
