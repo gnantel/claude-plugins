@@ -1,0 +1,24 @@
+schema_version: "1.0"
+name: submit-pr-skips-rereview-without-commits
+description: When the Copilot loop added no commits, submit-pr runs no second review and says so in the report.
+tags: [submit-pr, review-branch]
+runs: 1
+context:
+  scaffold_script: scaffold.sh
+execution:
+  model: sonnet
+  max_turns: 30
+  timeout_seconds: 600
+  allowed_tools: [Read, Glob, Grep, Agent, Skill, "Bash(git:*)", "Bash(gh:*)", "Bash(python3:*)"]
+  prompt: |
+    You are in the submit-pr flow for issue #23. The PR is created and the
+    Copilot review loop has just ended. The head before the loop is in
+    .git/pre-loop-head. Carry out the stages of submit-pr that follow the
+    loop, and report. Do not push or create anything.
+graders:
+  - type: llm
+    name: no second review
+    criteria: >-
+      The response finds that the head equals the pre-loop head, so the loop
+      added no commits, does not run a second branch review, and says in its
+      report that the re-review was skipped.
