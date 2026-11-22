@@ -69,6 +69,73 @@ def test_pr_creation_split_by_line_continuations_is_blocked(repository: Path, co
     assert run_hook("Bash", {"command": command}, repository) == BLOCKED
 
 
+@pytest.mark.parametrize("command", [
+    "git push && gh pr create --title T",
+    "git push; gh pr create",
+    "echo done | gh pr create",
+    "(gh pr create --title T)",
+    "url=$(gh pr create --title T)",
+    "GH_TOKEN=abc gh pr create",
+    "GH_TOKEN='a b' FOO=1 gh pr create",
+    "cat <<'EOF' > body.md\ntext\nEOF\ngh pr create --body-file body.md",
+    "cat <<EOF && gh pr create\ntext\nEOF",
+    "echo 'gh pr create' && gh pr create",
+    "command gh pr create",
+    "command -- gh pr create",
+    'echo "$(gh pr create --title "Fix bug")"',
+    "env 'GH_TOKEN=abc' gh pr create",
+    'env "GH_TOKEN=abc" gh pr create',
+    "env -u GH_TOKEN gh pr create",
+    "env -i PATH=/usr/bin:/bin gh pr create --title T",
+    "command -p gh pr create --title T",
+    "cat <<A <<B\n$(gh pr create)\nA\nbody\nB",
+    "cat <<A <<'B'\n$(gh pr create)\nA\nbody\nB",
+    "if false; then :; elif gh pr create; then :; fi",
+    "true;# don't create a PR\ngh pr create\n# don't",
+    "cat <<EOF # generated body\n$(gh pr create)\nEOF",
+    "> /dev/null gh pr create",
+    "2>/dev/null FOO=1 gh pr create",
+    "# don't create a PR\ngh pr create\n# don't",
+    "{ gh pr create; }",
+    "env GH_TOKEN=abc gh pr create",
+    "if gh pr create; then :; fi",
+    "cat <<<\"EOF\"\ngh pr create\ncat <<EOF\nbody\nEOF",
+    "echo \\' ; gh pr create ; echo \\'",
+    "echo '<<true'\ngh pr create\ntrue",
+    "echo \"$(gh pr create --title T)\"",
+    "cat <<EOF\n$(gh pr create --title T)\nEOF",
+    "cat <<A <<B\nfirst\nA\nsecond\nB\ngh pr create",
+])
+def test_real_pr_creation_is_blocked(repository: Path, command: str) -> None:
+    assert run_hook("Bash", {"command": command}, repository) == BLOCKED
+
+
+@pytest.mark.parametrize("command", [
+    "cat > issue.md <<'EOF'\nRun gh pr create when ready\nEOF",
+    "cat <<EOF\nline\ngh pr create\nEOF",
+    "cat <<-EOF\n\tgh pr create\n\tEOF",
+    'echo "gh pr create"',
+    "echo 'gh pr create'",
+    'echo "say \\"hi\\" then gh pr create"',
+    "git commit -m 'Block gh pr create until reviewed'",
+    "echo gh pr create",
+    "echo then gh pr create",
+    "echo {gh pr create}",
+    "command -v gh pr create",
+    "echo done;# example; gh pr create",
+    "echo done # example; gh pr create",
+    'echo "\\$(gh pr create)"',
+    "cat <<EOF\n EOF\ngh pr create\nEOF",
+    "cat <<'END-TEXT'\ngh pr create\nEND-TEXT",
+    "cat <<A <<B\nfirst\nA\ngh pr create\nB",
+    "cat <<'EOF'\n$(gh pr create)\nEOF",
+    "grep -r 'gh pr create' docs",
+    'echo "gh \\\npr create"',
+])
+def test_commands_that_only_mention_pr_creation_are_allowed(repository: Path, command: str) -> None:
+    assert run_hook("Bash", {"command": command}, repository) == ALLOWED
+
+
 def test_mcp_pr_creation_is_blocked_without_a_review(repository: Path) -> None:
     assert run_hook("mcp__github__create_pull_request", {"title": "T"}, repository) == BLOCKED
 
