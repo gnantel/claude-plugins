@@ -8,7 +8,12 @@
     {
       "name": "coding-standards",
       "source": "./plugins/coding-standards",
-      "description": "Personal coding style standards, the /pre-pr review and the PR hook. Enable globally."
+      "description": "Personal coding style standards and the style reviewers. Enable globally."
+    },
+    {
+      "name": "pr-workflow",
+      "source": "./plugins/pr-workflow",
+      "description": "Issue-first PR workflow: leaf issues, the /pre-pr review, scope reviewer, PR hook and Copilot review loop. Enable globally."
     },
     {
       "name": "operational-readiness",

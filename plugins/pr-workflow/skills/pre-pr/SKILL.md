@@ -1,6 +1,6 @@
 ---
 name: pre-pr
-description: Review the current branch against its leaf issue with every enabled review plugin's narrow reviewer agents in parallel (coding standards always; others such as operational-readiness when the project enables them), then report consolidated findings and offer to fix them. Use when the user asks for a pre-PR or standards review, or when the coding-standards hook blocks pull request creation.
+description: Review the current branch against its leaf issue with every enabled review plugin's narrow reviewer agents in parallel (coding standards always; others such as operational-readiness when the project enables them), then report consolidated findings and offer to fix them. Use when the user asks for a pre-PR or standards review, or when the pr-workflow hook blocks pull request creation.
 argument-hint: "[base-branch] [--fix]"
 ---
 
@@ -25,7 +25,7 @@ Arguments: `$ARGUMENTS`
   `.toml`, `.properties`, `pom.xml`, `package.json`), which operational
   reviewers need. Ignore generated files, lockfiles and vendored code.
 - If no source or configuration file changed, run only
-  `coding-standards:scope-reviewer` in step 3, since scope creep happens in
+  `pr-workflow:scope-reviewer` in step 3, since scope creep happens in
   any kind of change, then continue as usual: record the review in step 7,
   retry the PR creation if it was blocked, and continue with step 8.
 - **Issue:** find the leaf issue this branch implements with
@@ -45,7 +45,7 @@ Arguments: `$ARGUMENTS`
 The reviewers are **every** agent type available to you whose name matches
 `<plugin>:<name>-reviewer`, from any plugin. Being available means the
 plugin is enabled for this project, so run them all; do not skip a reviewer
-because its plugin is not `coding-standards`, and do not decide yourself
+because its plugin is not `pr-workflow`, and do not decide yourself
 whether a project needs it. Each reviewer knows where its own plugin's rules
 are and ignores files outside its scope.
 
@@ -56,12 +56,12 @@ List the reviewers you found before launching them.
 Launch every reviewer from step 2 **in one message**, so they run in
 parallel. Give each one the same prompt: the base ref, the issue number
 from step 1, and the list of changed files with their languages. Reviewers
-ignore files outside their own scope. `coding-standards:scope-reviewer` gets
+ignore files outside their own scope. `pr-workflow:scope-reviewer` gets
 every changed file instead, including documentation and untracked files
 (`git ls-files --others --exclude-standard`), since scope creep can be in
 any file.
 
-When `coding-standards:scope-reviewer` flags changes outside the issue, the
+When `pr-workflow:scope-reviewer` flags changes outside the issue, the
 fix is never to delete the work: after confirming with the user, open a new
 issue for it (rule PR3) and move it to its own branch and PR.
 
@@ -110,7 +110,7 @@ declined by the user, and all fixes are committed (the PR is built from
 commits, so a reviewed HEAD with uncommitted fixes would be meaningless):
 
 ```bash
-git rev-parse HEAD > "$(git rev-parse --path-format=absolute --git-path coding-standards-reviewed)"
+git rev-parse HEAD > "$(git rev-parse --path-format=absolute --git-path pr-workflow-reviewed)"
 ```
 
 Any later commit changes HEAD, so the branch needs a fresh review before the
@@ -127,6 +127,6 @@ Confirm the link once the PR is retargeted to the default branch.
 
 ## 8. Start the Copilot review loop
 
-Once the PR exists, run the `coding-standards:copilot-review-loop` skill on
+Once the PR exists, run the `pr-workflow:copilot-review-loop` skill on
 it, so Copilot's automatic review is addressed without the user having to
 ask.

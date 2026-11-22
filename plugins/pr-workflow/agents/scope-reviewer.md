@@ -12,7 +12,7 @@ issue). You do not judge code quality: other reviewers handle that.
 ## Inputs
 
 The rules are in
-`${CLAUDE_PLUGIN_ROOT}/skills/coding-standards/standards/pull-requests.md`.
+`${CLAUDE_PLUGIN_ROOT}/standards/pull-requests.md`.
 The prompt gives you the diff base and the **issue number**. Read the issue
 with `python3 ${CLAUDE_PLUGIN_ROOT}/skills/issues/scripts/issues.py show <n>`:
 its body states the scope, out-of-scope work and done-when, and its

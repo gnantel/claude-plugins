@@ -1,7 +1,7 @@
 # spring-boot
 
 Spring Boot conventions for Java services. Enable it per project; its
-reviewer joins `/coding-standards:pre-pr` automatically.
+reviewer joins `/pr-workflow:pre-pr` automatically.
 
 ## Install
 

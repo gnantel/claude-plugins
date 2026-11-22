@@ -7,7 +7,7 @@ from pathlib import Path
 
 import pytest
 
-HOOK = Path(__file__).parents[3] / "plugins" / "coding-standards" / "hooks" / "require_pre_pr_review.py"
+HOOK = Path(__file__).parents[3] / "plugins" / "pr-workflow" / "hooks" / "require_pre_pr_review.py"
 BLOCKED = 2
 ALLOWED = 0
 
@@ -36,7 +36,7 @@ def create_pr(cwd: Path) -> int:
 
 
 def record_review(directory: Path) -> None:
-    marker = git(directory, "rev-parse", "--path-format=absolute", "--git-path", "coding-standards-reviewed")
+    marker = git(directory, "rev-parse", "--path-format=absolute", "--git-path", "pr-workflow-reviewed")
     Path(marker).write_text(git(directory, "rev-parse", "HEAD") + "\n")
 
 

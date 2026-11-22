@@ -5,13 +5,13 @@ import re
 import subprocess
 import sys
 
-REVIEW_MARKER = "coding-standards-reviewed"
+REVIEW_MARKER = "pr-workflow-reviewed"
 GH_PR_CREATE = re.compile(r"\bgh\s+pr\s+create\b")
 BLOCKED_EXIT_CODE = 2
 
 BLOCK_MESSAGE = """\
 Standards review required before creating a pull request.
-Run the coding-standards:pre-pr skill on this branch first. Resolve its
+Run the pr-workflow:pre-pr skill on this branch first. Resolve its
 findings (or get the user's decision on them), commit, then create the PR
 again. The skill records the reviewed commit, which unblocks PR creation."""
 
