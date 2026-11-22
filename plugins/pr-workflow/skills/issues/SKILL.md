@@ -22,8 +22,18 @@ needs gh 2.104 or later for sub-issues):
    of scope` (related work left for other issues) and `## Done when`.
 2. If it needs more than one PR, it is a parent: split it into sub-issues,
    one per PR, and work on a leaf. Only leaves get PRs.
-3. Branch from the default branch, named `<issue-id>-<description>` (for
-   example `6-issue-linked-prs`).
+3. Work in a git worktree of its own, on a branch named
+   `<issue-id>-<description>` (for example `6-issue-linked-prs`), cut from
+   the freshly fetched remote default branch: `git fetch origin`, then
+   `git worktree add -b <branch> <path> origin/<default>`. Never cut from a
+   local default branch that may be stale. When the change deliberately
+   stacks on an open PR (rule PR3), cut from that PR's freshly fetched
+   branch (`origin/<parent-branch>`) instead.
+4. If the session is already in a worktree, run `git fetch origin` and check
+   that the branch contains its base, `origin/<default>` or the parent
+   branch it stacks on
+   (`git merge-base --is-ancestor origin/<base> HEAD`). If it doesn't and
+   the branch has no commits of its own yet, recut it from that base.
 
 ## While working
 
