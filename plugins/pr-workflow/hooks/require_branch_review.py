@@ -1,4 +1,4 @@
-"""PreToolUse hook that blocks pull request creation until the current commit has passed the pre-pr standards review."""
+"""PreToolUse hook that blocks pull request creation until the current commit has passed the branch review."""
 
 import json
 import re
@@ -10,10 +10,11 @@ GH_PR_CREATE = re.compile(r"\bgh\s+pr\s+create\b")
 BLOCKED_EXIT_CODE = 2
 
 BLOCK_MESSAGE = """\
-Standards review required before creating a pull request.
-Run the pr-workflow:pre-pr skill on this branch first. Resolve its
-findings (or get the user's decision on them), commit, then create the PR
-again. The skill records the reviewed commit, which unblocks PR creation."""
+Branch review required before creating a pull request.
+Run the pr-workflow:review-branch skill on this branch first (or
+pr-workflow:submit-pr, which runs it and then creates the PR). Resolve the
+findings (or get the user's decision on them) and commit. The review
+records the reviewed commit, which unblocks PR creation."""
 
 
 def main() -> None:

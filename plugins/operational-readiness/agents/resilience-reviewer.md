@@ -1,6 +1,6 @@
 ---
 name: resilience-reviewer
-description: Reviews changed service code against the operational standards for resilience of external calls only - timeouts (OR1), safe retries with backoff (OR2), a defined failure path (OR3), circuit breaking (OR4) and observable resilience (OR5). Use from /pre-pr or when asked to review retries, timeouts or fallbacks.
+description: Reviews changed service code against the operational standards for resilience of external calls only - timeouts (OR1), safe retries with backoff (OR2), a defined failure path (OR3), circuit breaking (OR4) and observable resilience (OR5). Use from /review-branch or when asked to review retries, timeouts or fallbacks.
 tools: Read, Grep, Glob, Bash
 model: sonnet
 ---

@@ -1,7 +1,7 @@
 {
   "name": "operational-readiness",
   "version": "0.1.0",
-  "description": "Operational review pack for services: metrics, structured logging, and resilience of external calls. Enable per project; its reviewers join /pr-workflow:pre-pr automatically.",
+  "description": "Operational review pack for services: metrics, structured logging, and resilience of external calls. Enable per project; its reviewers join /pr-workflow:review-branch automatically.",
   "license": "MIT",
   "keywords": [
     "code-review",

@@ -1,6 +1,6 @@
 ---
 name: naming-reviewer
-description: Reviews changed code against the personal coding standards for naming only - function names and extraction quality (G1) and variable names (G5). Use from /pre-pr or when asked to review naming against the coding standards.
+description: Reviews changed code against the personal coding standards for naming only - function names and extraction quality (G1) and variable names (G5). Use from /review-branch or when asked to review naming against the coding standards.
 tools: Read, Grep, Glob, Bash
 model: sonnet
 ---

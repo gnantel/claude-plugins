@@ -1,7 +1,7 @@
 # operational-readiness
 
 Operational review pack for services. Enable it per project; its reviewers
-join `/pr-workflow:pre-pr` automatically.
+join `/pr-workflow:review-branch` automatically.
 
 ## Install
 

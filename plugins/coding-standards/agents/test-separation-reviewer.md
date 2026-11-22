@@ -1,6 +1,6 @@
 ---
 name: test-separation-reviewer
-description: Reviews changed code against the personal coding standards for test separation (G8) and for implementation changes made only for testability (G9). Use from /pre-pr or when asked to review tests or testability against the coding standards.
+description: Reviews changed code against the personal coding standards for test separation (G8) and for implementation changes made only for testability (G9). Use from /review-branch or when asked to review tests or testability against the coding standards.
 tools: Read, Grep, Glob, Bash
 model: sonnet
 ---

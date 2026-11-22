@@ -1,6 +1,6 @@
 ---
 name: scope-reviewer
-description: Reviews a branch's changes for scope creep only - every change must serve the one leaf issue the pull request implements (PR1), and other work belongs in its own issue and PR (PR3). Use from /pre-pr or when asked to check a branch or PR for scope creep.
+description: Reviews a branch's changes for scope creep only - every change must serve the one leaf issue the pull request implements (PR1), and other work belongs in its own issue and PR (PR3). Use from /review-branch or when asked to check a branch or PR for scope creep.
 tools: Read, Grep, Glob, Bash
 model: sonnet
 ---

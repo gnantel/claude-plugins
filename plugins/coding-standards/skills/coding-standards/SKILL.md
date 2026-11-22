@@ -30,4 +30,4 @@ The ones most often missed:
    idiomatic way first. The explicit rules above win over idiom.
 
 When you finish a change, check your own diff against these rules before
-reporting it done. For a full review, the user runs `/pre-pr`.
+reporting it done. For a full review, the user runs `/pr-workflow:review-branch`.

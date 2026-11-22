@@ -1,7 +1,7 @@
 # coding-standards
 
 Personal coding style standards for Java, Python, Rust and TypeScript, with
-narrow style reviewers that join `/pr-workflow:pre-pr`.
+narrow style reviewers that join `/pr-workflow:review-branch`.
 
 ## Install
 
@@ -20,6 +20,6 @@ narrow style reviewers that join `/pr-workflow:pre-pr`.
 ## Use
 
 - Writing code: the `coding-standards` skill loads automatically.
-- Reviewing: the reviewers run as part of `/pr-workflow:pre-pr`, which comes
+- Reviewing: the reviewers run as part of `/pr-workflow:review-branch`, which comes
   from the [pr-workflow](../pr-workflow) plugin. Install it too for the issue,
   PR and review workflow.
