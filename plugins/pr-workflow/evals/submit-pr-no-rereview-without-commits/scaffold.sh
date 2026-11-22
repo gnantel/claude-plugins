@@ -11,7 +11,7 @@ printf '"""Late fee calculation."""\n\nRATE = 0.05\n\n\ndef late_fee(amount):\n 
 git add -A
 git commit -q -m "Initial service"
 
-git checkout -q -b 23-cap-late-fees
+git checkout -q -b 6-cap-late-fees
 printf '"""Late fee calculation."""\n\nRATE = 0.05\nMAX_LATE_FEE = 100\n\n\ndef late_fee(amount):\n    return min(amount * RATE, MAX_LATE_FEE)\n' > src/late_fee.py
 git commit -q -am "Cap late fees at 100"
 git rev-parse HEAD > .git/pre-loop-head

@@ -31,7 +31,9 @@ Arguments: `$ARGUMENTS`
   step 7.
 - **Issue:** find the leaf issue this branch implements with
   `python3 ${CLAUDE_PLUGIN_ROOT}/skills/issues/scripts/issues.py for-branch`
-  (or the issue the user names). Stop and tell the user if there is none,
+  (or the issue the user names). When the user gives the issue's text
+  because the repository isn't on GitHub, use that text as the issue and
+  look nothing up. Otherwise stop and tell the user if there is none,
   if it is closed, or if it has sub-issues (`is_leaf: false`): every PR
   implements exactly one open leaf issue (rule PR1). Offer to create or
   split the issue with the `issues` skill.
@@ -56,9 +58,10 @@ List the reviewers you found before launching them.
 
 Launch every reviewer from step 2 **in one message**, so they run in
 parallel. Give each one the same prompt: the base ref, the issue number
-from step 1, and the list of changed files with their languages. Reviewers
-ignore files outside their own scope. `pr-workflow:scope-reviewer` gets
-every changed file instead, including documentation and untracked files
+from step 1 (with the full issue text when the user gave it, and the
+instruction to look nothing up), and the list of changed files with their
+languages. Reviewers ignore files outside their own scope.
+`pr-workflow:scope-reviewer` gets every changed file instead, including documentation and untracked files
 (`git ls-files --others --exclude-standard`), since scope creep can be in
 any file.
 
