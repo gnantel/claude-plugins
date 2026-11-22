@@ -74,3 +74,13 @@ def test_an_unreadable_default_branch_is_an_error(github_with) -> None:
 def test_a_helper_failure_is_passed_on_as_an_error(github_with) -> None:
     github_with(references=[reference(7)], issue={"error": "Couldn't read the PR's issue: gh failed"})
     assert pr_issue.pr_issue(PULL) == {"error": "Couldn't read the PR's issue: gh failed"}
+
+
+def test_a_stacked_pr_takes_its_issue_from_a_prefixed_branch_name(github_with) -> None:
+    github_with(base="6-parent-work", head_ref="claude/7-loop-scope")
+    assert pr_issue.pr_issue(PULL)["number"] == 7
+
+
+def test_a_prefixed_branch_without_an_issue_number_in_its_last_segment_is_an_error(github_with) -> None:
+    github_with(base="6-parent-work", head_ref="7/loop-scope")
+    assert "doesn't close an issue" in pr_issue.pr_issue(PULL)["error"]

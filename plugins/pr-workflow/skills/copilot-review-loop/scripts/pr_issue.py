@@ -8,7 +8,7 @@ import sys
 from pathlib import Path
 
 ISSUES_HELPER = Path(__file__).resolve().parents[2] / "issues" / "scripts" / "issues.py"
-BRANCH_ISSUE_NUMBER = re.compile(r"^(\d+)-")
+BRANCH_ISSUE_NUMBER = re.compile(r"(?:^|/)(\d+)-[^/]*$")
 
 
 def pr_issue(pull: dict) -> dict:
@@ -56,7 +56,7 @@ def stacked_branch_issue(pull: dict, current: dict) -> int | str:
     default = default_branch(pull["repo"])
     if default is None:
         return f"Couldn't read {pull['repo']}'s default branch, so PR #{pull['number']}'s issue can't be verified."
-    branch_number = BRANCH_ISSUE_NUMBER.match(current["headRefName"])
+    branch_number = BRANCH_ISSUE_NUMBER.search(current["headRefName"])
     if current["baseRefName"] == default or branch_number is None:
         return f"PR #{pull['number']} doesn't close an issue: add `Closes #<n>` to its description."
     return int(branch_number.group(1))
