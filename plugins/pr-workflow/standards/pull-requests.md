@@ -50,6 +50,15 @@ Spring repository.
   sub-issues, one per PR, before starting. Only leaves get PRs. Nesting
   depth is the hierarchy: a parent for the goal, leaves for the units of
   work.
+- **Each leaf is reviewable in one sitting**, judged by the lines a
+  reviewer has to read; mechanical changes (moves, renames, generated
+  files) count for little. A leaf that looks too big is split before work
+  starts.
+- **Sub-issues record their dependencies** in a `## Depends on` section and
+  are split so that as many as possible are independent.
+- **An issue whose code guards, validates or hardens something states its
+  threat model**: what it defends against and what it deliberately does
+  not. Review judges the change against it.
 - **Branch from the freshly fetched `origin/<default>`**, in its own
   worktree, named `<issue-id>-<description>` (`6-issue-linked-prs`).
 - **The description of the PR includes `Closes #<n>`** for its one leaf
@@ -62,9 +71,10 @@ noticed in passing, a follow-up), open a new issue for it, as a sub-issue
 when it belongs to a larger goal. Don't add it to the branch that happens
 to be checked out, unless the user explicitly asks for that.
 
-- If the new work depends on an open PR, say so in its issue. Either wait
-  for that PR to merge, or stack the new PR explicitly on the open PR's
-  branch and say so in its description. GitHub ignores `Closes #<n>` on a
+- If the new work depends on an open PR, say so in its issue. Waiting for
+  that PR to merge is the default; stacking is the exception, for a long
+  dependent chain when review is slow. To stack, base the new PR explicitly
+  on the open PR's branch and say so in its description. GitHub ignores `Closes #<n>` on a
   stacked PR until it targets the default branch, so its issue is found
   from the `<issue-id>-` branch name.
 - Decisions that change what an issue should contain are recorded on the

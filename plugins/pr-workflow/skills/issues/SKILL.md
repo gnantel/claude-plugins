@@ -21,7 +21,8 @@ needs gh 2.104 or later for sub-issues):
    code. The body has `## Scope` (the purpose, one or two sentences), `## Out
    of scope` (related work left for other issues) and `## Done when`.
 2. If it needs more than one PR, it is a parent: split it into sub-issues,
-   one per PR, and work on a leaf. Only leaves get PRs.
+   one per PR, and work on a leaf. Only leaves get PRs. See "Sizing and
+   splitting".
 3. Work in a git worktree of its own, on a branch named
    `<issue-id>-<description>` (for example `6-issue-linked-prs`), cut from
    the freshly fetched remote default branch: `git fetch origin`, then
@@ -34,6 +35,27 @@ needs gh 2.104 or later for sub-issues):
    branch it stacks on
    (`git merge-base --is-ancestor origin/<base> HEAD`). If it doesn't and
    the branch has no commits of its own yet, recut it from that base.
+
+## Sizing and splitting
+
+- **A leaf is reviewable in one sitting.** It is one coherent change, judged
+  by the lines a reviewer has to read. Mechanical changes (moves, renames,
+  generated files) count for little: a 39-file rename can be easy to
+  review. If a leaf looks too big, split it before work starts. There is no
+  line limit.
+- **Order sub-issues by dependency.** Each sub-issue body has a `## Depends
+  on` section naming the sub-issues it needs merged first (`None` when it
+  needs nothing). Prefer splits where as many sub-issues as possible are
+  independent, so they run in parallel, each cut from the latest default
+  branch.
+- **A dependent sub-issue waits for its dependency to merge.** Stacking a PR
+  on an open PR (rule PR3) is the exception, for a long dependent chain
+  when review is slow.
+- **State a threat model when the code guards, validates or hardens
+  something.** Under `## Scope`, say what it defends against and what it
+  deliberately does not. A hook that stops Claude forgetting a review is a
+  guard rail, not a security boundary. Reviewers then judge the change
+  against that, instead of arguing edge cases the issue ruled out.
 
 ## While working
 

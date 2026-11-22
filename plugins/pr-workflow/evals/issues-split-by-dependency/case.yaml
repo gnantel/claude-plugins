@@ -1,0 +1,75 @@
+schema_version: "1.0"
+name: issues-split-by-dependency
+description: An oversized issue is split into sub-issues, each reviewable alone, with the dependencies between them recorded and the independent ones kept independent.
+tags: [issues, splitting]
+runs: 1
+context:
+  scaffold_script: scaffold.sh
+execution:
+  model: sonnet
+  max_turns: 20
+  timeout_seconds: 600
+  allowed_tools: [Read, Glob, Grep, Skill, "Bash(git:*)"]
+  prompt: |
+    Use the issues skill to plan this work. This repository isn't on GitHub,
+    so don't create anything: show me the sub-issues you would create, each
+    with its title and body. Here is issue #12 in full:
+
+    ## Scope
+
+    Replace the billing service's flat-file storage with a database: a new
+    storage layer, a migration of the existing invoice, customer and payment
+    files into it, new reports that read from it, and a customer export
+    endpoint that returns the same data as JSON. Invoice, customer and
+    payment storage are separate modules that don't share code, and the
+    reports and the export both need the new storage layer to exist first.
+
+    ## Out of scope
+
+    Changing the invoice format.
+
+    ## Done when
+
+    Billing runs on the database, and the old files are no longer read.
+graders:
+  - type: llm
+    name: splits instead of one PR
+    criteria: >-
+      The response treats issue #12 as a parent and proposes several
+      sub-issues, each one pull request, instead of a single change.
+  - type: llm
+    name: records dependencies
+    criteria: >-
+      Each proposed sub-issue body states which other sub-issues it depends
+      on (for example in a "Depends on" section), including "None" for
+      sub-issues that need nothing.
+  - type: llm
+    name: dependent work waits on the storage layer
+    criteria: >-
+      The reports and the export endpoint are listed as depending on the new
+      storage layer.
+  - type: llm
+    name: keeps independent work independent
+    criteria: >-
+      At least two sub-issues are independent of each other (for example the
+      invoice, customer and payment storage modules), so they can run in
+      parallel, and the response says so or shows it through the recorded
+      dependencies.
+  - type: llm
+    name: each sub-issue is reviewable alone
+    criteria: >-
+      No proposed sub-issue bundles unrelated pieces of the work. The invoice,
+      customer and payment storage modules, the migration, the reports and the
+      export are not all lumped into one or two large sub-issues; each
+      sub-issue is one coherent change a reviewer can read in one sitting.
+  - type: llm
+    name: waits rather than stacks
+    criteria: >-
+      The response does not plan stacked PRs as the default. Dependent
+      sub-issues wait for their dependency to merge, and stacking is at most
+      mentioned as an exception.
+  - type: tool_used
+    name: ran the issues skill
+    tool: Skill
+    input_match: issues
+    arm: with-only

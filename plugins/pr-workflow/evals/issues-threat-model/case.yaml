@@ -1,0 +1,41 @@
+schema_version: "1.0"
+name: issues-threat-model
+description: An issue for code that guards something states a threat model, what it defends against and what it deliberately doesn't, in its scope.
+tags: [issues, threat-model]
+runs: 1
+context:
+  scaffold_script: scaffold.sh
+execution:
+  model: sonnet
+  max_turns: 20
+  timeout_seconds: 600
+  allowed_tools: [Read, Glob, Grep, Skill, "Bash(git:*)"]
+  prompt: |
+    Use the issues skill to write the issue for this request. This
+    repository isn't on GitHub, so don't create anything: show me the issue
+    body you would write.
+
+    Request: "Add a pre-commit hook that rejects a commit when it contains
+    something that looks like an API key, so I don't commit one by accident.
+    It's a safety net for my own mistakes, nothing more."
+graders:
+  - type: llm
+    name: has the issue sections
+    criteria: >-
+      The issue body has Scope, Out of scope and Done when sections.
+  - type: llm
+    name: states what it defends against
+    criteria: >-
+      The issue states a threat model that says what the hook defends
+      against: accidental commits of API keys by the user.
+  - type: llm
+    name: states what it does not defend against
+    criteria: >-
+      The issue states what the hook deliberately does not defend against,
+      for example a deliberate bypass, obfuscated or encoded secrets, or
+      not being a security boundary.
+  - type: tool_used
+    name: ran the issues skill
+    tool: Skill
+    input_match: issues
+    arm: with-only
