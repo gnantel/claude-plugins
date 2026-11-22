@@ -28,6 +28,9 @@ The ones most often missed:
    feature it belongs to; no top-level `services/`, `models/` or `utils/`.
 6. **G11:** write idiomatic code for the language; when unsure, work out the
    idiomatic way first. The explicit rules above win over idiom.
+7. **G13:** order code top-down in call order: each public function is
+   followed by the private helpers it calls, depth first. A utility used all
+   over the file goes at the bottom.
 
 When you finish a change, check your own diff against these rules before
 reporting it done. For a full review, the user runs `/pr-workflow:review-branch`.

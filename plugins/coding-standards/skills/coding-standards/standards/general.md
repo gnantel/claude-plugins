@@ -243,3 +243,46 @@ Examples:
 conflicts with them. For example, Rust tests stay in separate files (RS4)
 even though inline test modules are idiomatic, and Python functions get no
 docstrings in applications (G6b).
+
+## G13. Order code top-down in call order (the stepdown rule)
+
+A file reads like a narrative: the public API comes first, and each public
+function or method is followed by the private helpers it calls, in the order it
+calls them, depth first.
+
+- A helper called by several functions goes after its first caller.
+- **Exception:** a private utility used in many places in the same file goes
+  at the bottom.
+- Constants, types, imports and fields stay where the language expects them,
+  at the top. In Java that means fields and constructors first, then each
+  public method followed by its private helpers, rather than all public
+  methods grouped together.
+- Entry points the language puts at the bottom, such as Python's
+  `if __name__ == "__main__":` block, stay there.
+
+**Why:** the reader meets the high-level intent first and follows the calls
+downward, and never has to hunt for a helper far from where it is used.
+
+Bad (helpers in the opposite order from the calls, far from the caller):
+
+```python
+def _format_total(order): ...
+def _format_header(order): ...
+
+def render_receipt(order):
+    return _format_header(order) + _format_total(order)
+
+def render_summary(order): ...
+```
+
+Good:
+
+```python
+def render_receipt(order):
+    return _format_header(order) + _format_total(order)
+
+def _format_header(order): ...
+def _format_total(order): ...
+
+def render_summary(order): ...
+```
