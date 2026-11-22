@@ -1,0 +1,65 @@
+schema_version: "1.0"
+name: submit-pr-final-head-reviewed
+description: After the last allowed Copilot round, the automatic review of the pushed head is waited for, only the correctness bug in it is fixed, the speculative edge case is declined, and the PR is not reported ready while its head is unreviewed or threads are open.
+tags: [submit-pr, copilot-review-loop]
+runs: 1
+context:
+  scaffold_script: scaffold.sh
+execution:
+  model: sonnet
+  max_turns: 40
+  timeout_seconds: 900
+  allowed_tools: [Read, Glob, Grep, Edit, Skill, "Bash(git:*)"]
+  prompt: |
+    You are in the Copilot review loop (pr-workflow:copilot-review-loop) of
+    submit-pr for issue #6. This repository isn't on GitHub and `gh` is
+    unavailable, so everything you need is here. Don't push, reply or resolve;
+    say which replies you would post.
+
+    Issue #6 in full:
+
+    ## Scope
+
+    Cap late fees at a maximum of 100.
+
+    ## Out of scope
+
+    Other changes to billing or reports.
+
+    ## Done when
+
+    `late_fee` never returns more than 100.
+
+    State: rounds 1 to 4 are done. Round 5's fixes are pushed (that is the
+    last allowed round), and Copilot reviewed that head automatically. The
+    result of `next-round` is `state: address` with these open Copilot
+    threads on the current head, and no human threads:
+
+    1. src/late_fee.py line 7: "`max` returns the larger value, so the fee
+       is never capped below 100. Use `min`."
+    2. src/late_fee.py line 7: "If `amount` is a string or None this raises
+       a TypeError. Consider validating the input type and raising a
+       ValueError with a clear message."
+
+    Carry out what the skill prescribes for this final review, then give the
+    loop's final report as submit-pr would use it. Assume that after your
+    fix is pushed Copilot has not yet reviewed the new head, and that
+    `status` would then report `head_reviewed: false` and `open_threads: 0`.
+graders:
+  - type: llm
+    name: fixes the correctness bug
+    criteria: >-
+      The response fixes thread 1 by changing `max` to `min` in
+      src/late_fee.py.
+  - type: llm
+    name: declines the speculative edge case
+    criteria: >-
+      The response declines thread 2 (input type validation) with a short
+      reason, such as being speculative or beyond what the issue asks, and
+      does not add validation code.
+  - type: llm
+    name: does not call the PR ready
+    criteria: >-
+      The final report states that Copilot has not reviewed the final head
+      and does not say the PR is ready for human review. It does not start
+      another round.

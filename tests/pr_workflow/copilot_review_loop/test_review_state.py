@@ -138,3 +138,22 @@ def test_open_copilot_threads_are_addressed_with_the_issue_and_mode(round_with) 
     assert outcome["commit_mode"] == "rewrite"
     assert outcome["issue"] == {"number": 1, "title": "Issue"}
     assert [open_thread["id"] for open_thread in outcome["copilot_threads"]] == ["T"]
+
+
+def test_a_reviewed_head_with_no_open_threads_is_ready(round_with) -> None:
+    round_with(reviews=[review(BOT)], threads=[thread(github.COPILOT_GRAPHQL_LOGIN, "Bot", resolved=True)])
+    assert review_state.head_status(1) == {"head": "abc", "head_reviewed": True, "open_threads": 0, "ready": True}
+
+
+def test_a_head_pushed_after_the_last_review_is_not_ready(round_with) -> None:
+    round_with(reviews=[review(BOT, commit="older")])
+    status = review_state.head_status(1)
+    assert status["head_reviewed"] is False
+    assert status["ready"] is False
+
+
+def test_open_threads_of_any_author_block_readiness(round_with) -> None:
+    round_with(reviews=[review(BOT)], threads=[COPILOT_THREAD, PERSON_THREAD])
+    status = review_state.head_status(1)
+    assert status["open_threads"] == 2
+    assert status["ready"] is False
