@@ -62,7 +62,7 @@ def review_outcome(pull: dict, review: dict, head: str) -> dict:
 
 
 def commit_mode(pull: dict) -> str:
-    if not pull["rebase_merge_allowed"] or local_git.has_merge_commits(local_git.branch_base(pull["base"])):
+    if local_git.has_merge_commits(local_git.branch_base(pull["base"])):
         return "new-commit"
     return "new-commit" if human_reviewed(pull["repo"], pull["number"]) else "rewrite"
 
