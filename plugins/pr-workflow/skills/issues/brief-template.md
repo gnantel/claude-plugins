@@ -4,7 +4,7 @@ The issue is the spec and its Done when is the bar. Lines marked `<<FILL: ...>>`
 
 COMMON RULES
 - Read issue #{number} in full, including its comments: they hold scope decisions (`gh issue view {number} --comments`).
-- Run `git fetch origin` first and base your branch on the latest `origin/<default>` in your own worktree.
+- Run `git fetch origin` first, then `pr-workflow:cleanup`, and base your branch on the latest `origin/<default>` in your own worktree.
 - Load the `coding-standards` skill before writing code.
 - One PR, closing #{number} only. Anything out of scope becomes a new issue (use the `issues` skill), never part of this branch.
 - Docs describe what is true now: no changelog wording, and no counts of growing lists (reviewers, skills, rules) or version numbers.
