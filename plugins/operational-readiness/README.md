@@ -12,11 +12,12 @@ join `/pr-workflow:review-branch` automatically.
 
 | Path | Purpose |
 |---|---|
-| `skills/operational-readiness/standards/general.md` | The rules: metrics (OM), logging (OL), resilience (OR) |
+| `skills/operational-readiness/standards/general.md` | The rules: metrics (OM), logging (OL), resilience (OR), tracing (OT) |
 | `skills/operational-readiness/SKILL.md` | Loads the rules before Claude writes service code |
 | `agents/metrics-reviewer.md` | Metrics added, updated and removed with behavior; label cardinality; naming |
 | `agents/logging-reviewer.md` | Structured logging, significant events, levels, error context, no secrets |
 | `agents/resilience-reviewer.md` | Timeouts, safe retries, failure paths, circuit breaking on external calls |
+| `agents/tracing-reviewer.md` | Spans on important operations, context propagation, bounded span attributes, errors on spans, trace IDs in logs |
 
 Each project describes its own tools in `.claude/operational.md`, for example:
 
@@ -26,5 +27,6 @@ Each project describes its own tools in `.claude/operational.md`, for example:
 - Metrics: Micrometer, Prometheus naming (`snake_case`, `_total`, `_seconds`).
 - Logging: SLF4J + Logback JSON encoder; every log has `request_id`.
 - Resilience: resilience4j; default retry 3 attempts, exponential backoff.
+- Tracing: OpenTelemetry; HTTP and DB clients auto-instrumented; semantic conventions for attributes.
 - Personal data: never log emails or names.
 ```

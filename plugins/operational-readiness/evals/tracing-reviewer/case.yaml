@@ -1,0 +1,40 @@
+schema_version: "1.0"
+name: tracing-reviewer
+description: The tracing rules flag an untraced outbound call and a thread hand-off that drops the trace context, and accept a correctly traced call.
+tags: [reviewer, tracing]
+runs: 1
+context:
+  scaffold_script: scaffold.sh
+execution:
+  model: sonnet
+  max_turns: 30
+  timeout_seconds: 600
+  allowed_tools: [Read, Glob, Grep, Agent, Skill, "Bash(git:*)"]
+  prompt: |
+    I'm about to open a pull request for the current branch of this service.
+    Review its tracing against my operational standards: compare the branch
+    with `main` and list what should change, with its file and line. Don't
+    edit any files.
+    If you have a dedicated reviewer agent for this, use it.
+graders:
+  - type: llm
+    name: flags the untraced outbound call
+    criteria: >-
+      The response flags the outbound HTTP call in `fetch_carrier_quote` as
+      not running inside its own span, and asks for a span around it.
+  - type: llm
+    name: flags the dropped trace context
+    criteria: >-
+      The response says the work submitted to the thread pool in
+      `fetch_all_quotes` loses the parent span or trace context, and asks for
+      the context to be carried into the worker thread.
+  - type: llm
+    name: accepts the traced call
+    criteria: >-
+      The response does not say `fetch_tracking` lacks a span. Suggestions
+      about recording errors on that span are fine.
+  - type: tool_used
+    name: ran the tracing-reviewer
+    tool: Agent
+    input_match: tracing-reviewer
+    arm: with-only
