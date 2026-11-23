@@ -1,4 +1,4 @@
-"""Commits and pushes one round of Copilot review fixes: folds them into the commits they fix while only bots have reviewed, and adds a new commit once a person has reviewed."""
+"""Commits and pushes one round of Copilot review fixes: amends them into the branch's single commit while only bots have reviewed, and adds a new commit once a person has reviewed."""
 
 import os
 import sys
@@ -10,7 +10,7 @@ import review_state
 CO_AUTHOR_TRAILER = "Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
 
 
-def push_round(number: int | None, round_number: int) -> dict:
+def push_round(number: int | None, round_number: int, single_commit_message: str | None = None) -> dict:
     pull = github.pull_request(number)
     if pull["from_fork"]:
         sys.exit("Pull requests from forks aren't supported: push-round pushes to origin, not the fork.")
@@ -21,20 +21,21 @@ def push_round(number: int | None, round_number: int) -> dict:
         sys.exit("No changes to push: fix the threads first, or end the loop if every comment was declined.")
     mode = review_state.commit_mode(pull)
     if mode == "rewrite":
-        mode = push_rewritten(pull, changed_files, round_number)
+        mode = push_rewritten(pull, changed_files, round_number, single_commit_message)
     else:
         commit_new_round(changed_files, round_number)
         local_git.git("push", "--quiet", "origin", f"HEAD:refs/heads/{pull['head_ref']}")
     return {"mode": mode, "head": local_git.head(), "short": local_git.git("rev-parse", "--short", "HEAD")}
 
 
-def push_rewritten(pull: dict, changed_files: list[str], round_number: int) -> str:
+def push_rewritten(pull: dict, changed_files: list[str], round_number: int, single_commit_message: str | None) -> str:
     base = local_git.branch_base(pull["base"])
     unmatched = commit_fixups(changed_files, base)
     if unmatched:
         commit_new_round(unmatched, round_number)
     destination = f"refs/heads/{pull['head_ref']}"
     if autosquash(base):
+        replace_message(base, single_commit_message)
         local_git.git("push", "--quiet", f"--force-with-lease={destination}:{pull['head']}",
                       "origin", f"HEAD:{destination}")
         return "rewrite"
@@ -44,8 +45,9 @@ def push_rewritten(pull: dict, changed_files: list[str], round_number: int) -> s
 
 def commit_fixups(changed_files: list[str], base: str) -> list[str]:
     unmatched = []
+    sole_commit = local_git.sole_branch_commit(base)
     for path in changed_files:
-        target = local_git.last_branch_commit_touching(base, path)
+        target = sole_commit or local_git.last_branch_commit_touching(base, path)
         if target:
             local_git.git("add", "--", path, allow_failure=True)
             local_git.git("commit", "--quiet", "-m", amend_message(target), "--", path)
@@ -68,6 +70,12 @@ def autosquash(base: str) -> bool:
     if not succeeded:
         local_git.git("rebase", "--abort", allow_failure=True)
     return succeeded
+
+
+def replace_message(base: str, single_commit_message: str | None) -> None:
+    if single_commit_message and local_git.sole_branch_commit(base):
+        attributed = local_git.with_trailer(single_commit_message, CO_AUTHOR_TRAILER)
+        local_git.git("commit", "--quiet", "--amend", "-m", attributed)
 
 
 def commit_new_round(paths: list[str], round_number: int) -> None:

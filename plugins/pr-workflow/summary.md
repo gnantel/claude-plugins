@@ -16,3 +16,8 @@ Full rules: `standards/pull-requests.md` in the pr-workflow plugin.
   made in discussion go on the issue as a comment.
 - Review locally with `review-branch` (it never creates a PR); use
   `submit-pr` to go from a reviewed branch to a PR ready for human review.
+- A PR reaches human review as one commit. Amend every later fix into the
+  branch's commit with `git commit --amend`, including fixes before review,
+  from `review-branch` and from Copilot, and update the message when a fix
+  changes what it does. Squash only as a backstop, before the review is
+  recorded. Once a person has reviewed, fixes are new commits.

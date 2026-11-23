@@ -19,7 +19,7 @@ creation, and the Copilot review loop.
 | `skills/cleanup/` | `/pr-workflow:cleanup [--dry-run]`: removes local branches whose PR merged, and their clean worktrees; keeps and explains everything else |
 | `skills/copilot-review-loop/` | `/pr-workflow:copilot-review-loop`: addresses Copilot's PR review round after round until it has no new comments |
 | `agents/scope-reviewer.md` | Reviewer (Sonnet): the diff must serve the branch's one leaf issue |
-| `standards/pull-requests.md` | The rules PR1–PR4 |
+| `standards/pull-requests.md` | The pull request rules |
 | `hooks/` | Blocks PR creation by Claude until the current commit has passed `/review-branch` |
 | `summary.md` | Short version to import into `~/.claude/CLAUDE.md` |
 

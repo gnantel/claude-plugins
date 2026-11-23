@@ -15,6 +15,10 @@ Arguments: `$ARGUMENTS`, passed on to `review-branch`.
 
 ## 1. Review the branch
 
+If the branch is already pushed, note the remote tip first
+(`git ls-remote origin <branch>`): it is the lease if the review rewrites
+the branch.
+
 Run `pr-workflow:review-branch` with the arguments. Continue once it has
 recorded the review for the current commit. If it stopped (no leaf issue, a
 PR linked to a different issue, findings the user hasn't settled), stop too.
@@ -22,7 +26,14 @@ Keep its outcome: findings raised, fixed and declined.
 
 ## 2. Create the PR
 
-Push the branch and create the PR with `Closes #<n>` for its issue in the
+The branch has exactly one commit on its base at this point (stage 1
+squashes it if needed), with a message that describes the whole change and
+ends with `Closes #<n>`. Stacked branches deliberately split into several
+commits are the exception.
+
+Push the branch (with `git push --force-with-lease=<branch>:<noted tip>` if
+stage 1 rewrote commits that were already pushed and no person has been
+involved; a plain push for a new branch or additive commits) and create the PR with `Closes #<n>` for its issue in the
 description. Its `--base` is a branch name: the base branch argument if one
 was given, the branch it stacks on, or otherwise the default branch. Never
 the merge-base commit that `review-branch` diffs against. If the branch already has a
@@ -48,9 +59,14 @@ stopped, if it did) and anything left for the user.
 Compare the pre-loop head with the current head (`git rev-parse HEAD`). If they are
 equal, the loop added no commits: skip this stage and say so in the report.
 
-If they differ, run `pr-workflow:review-branch` again on the new head,
-with the same arguments. Its findings are handled as in stage 1: fixed,
-committed and pushed, or declined by the user. Keep its outcome as its own
+If they differ, note the PR's head SHA (`gh pr view --json headRefOid`) as
+the lease, then run `pr-workflow:review-branch` again on the new head, with
+the same arguments. Its findings are handled as in stage 1: fixed
+(while only bots have reviewed, amended into the single commit and pushed
+with `git push --force-with-lease=<branch>:<noted SHA>`, never the amended local head; once a person has
+reviewed or commented, new commits pushed normally), or declined by the
+user. If the loop left the commit message
+out of date, update it in the same amend. Keep its outcome as its own
 stage, separate from stage 1. If it stopped on findings the user hasn't
 settled, stop and tell the user.
 
@@ -80,12 +96,13 @@ If the PR conflicts with its base, or is stacked on a squash-merged parent:
    branch and confirm its closing-issue link as in stage 2. Stop and ask
    the user only when a conflict can't be resolved without a judgement call on the
    code's intent.
-4. Run the project's tests, then push to the PR's head branch with a lease
+4. Rebasing keeps the single commit. Run the project's tests, then push to the PR's head branch with a lease
    bound to the verified SHA:
    `git push --force-with-lease=<branch>:<sha> origin HEAD:<branch>`.
 5. Run stage 1 again on the new head, with `origin/<default>` (or the PR's
    base branch, fetched) as its base argument instead of any local branch
-   name, and push any commits it produces. Then run stage 3 again on the PR
+   name, and fix as in stage 4: amend into the single commit with a lease push only
+   while no person has reviewed, otherwise add commits. Then run stage 3 again on the PR
    as usual (it takes no base argument) and stage 4 with the same base
    argument as stage 1.
 
@@ -95,13 +112,15 @@ ones.
 
 ## 6. Report
 
-Run the loop's `status` command (`copilot_review.py status`) on the PR
+Check that the branch is still one commit on its base. Run the loop's `status` command (`copilot_review.py status`) on the PR
 for the final head. State that the PR is ready for human review, with its
 link, only if it reports `ready` (Copilot reviewed the final head, no
 threads open), which also covers commits that stages 4 and 5 pushed after
 the loop. Otherwise say so explicitly (which head is unreviewed, how many threads are
 open) and don't call it ready. If the loop stopped early, say why. Cover:
 
+- **Commit:** that the PR reaches human review as one commit, or why it
+  doesn't.
 - **Local review:** findings raised, fixed and declined.
 - **Copilot:** comments raised, fixed (with commits), declined (with
   reasons) and declined as outside the issue (with the follow-up issues).

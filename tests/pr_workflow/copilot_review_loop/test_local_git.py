@@ -84,3 +84,11 @@ def test_a_rebase_stopped_on_a_conflict_is_not_an_emptied_commit(repository) -> 
     local_git.succeeds("rebase", "other")
     assert local_git.is_rebasing()
     assert not local_git.stopped_on_emptied_commit()
+
+
+def test_a_file_in_the_working_tree_is_inside_it(repository) -> None:
+    assert local_git.is_inside_worktree(repository.path / "message.txt")
+
+
+def test_a_file_beside_the_working_tree_is_outside_it(repository) -> None:
+    assert not local_git.is_inside_worktree(repository.path.parent / "message.txt")

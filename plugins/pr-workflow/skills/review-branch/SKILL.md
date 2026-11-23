@@ -97,6 +97,15 @@ If there are no findings, say the branch is clean.
 - With `--fix`: apply every fix, then run the project's format, lint and
   test commands (`just fmt`, `just lint`, `just test` if a justfile exists;
   otherwise the project's own tooling) and report the results.
+- Fold every fix into the branch's single commit with
+  `git commit --amend` (rule PR6) instead of adding a commit, and update the
+  message if a fix changes what the commit does. A branch that already has
+  a person's involvement in its PR (a review, a comment or a review thread
+  they started) is the exception: fixes there are new commits.
+  So is a branch with no commit of its own yet (`git rev-list --count
+  <base>..HEAD` is 0): commit normally, since amending would rewrite the
+  base. So is a stacked branch deliberately split into several commits:
+  its fixes are new commits, as before.
 - Without `--fix`: ask the user which findings to fix (all, by rule ID, or
   none) before changing anything.
 
@@ -108,6 +117,24 @@ the standards, and it is worth mentioning which.
 
 ## 7. Record the review
 
+First make the branch one commit (rule PR6). Count the branch's commits
+with `git rev-list --count <fork-point>..HEAD`, where the fork point is
+`git merge-base HEAD <base>` (a base given as an argument is a branch tip,
+which may have moved on since the branch forked). If there is more than one
+and no person has been involved in the PR (as above), squash them into one
+curated commit:
+
+```bash
+git reset --soft <fork-point> && git commit
+```
+
+Its message describes the whole change, in the repository's commit style,
+and ends with `Closes #<n>` (before any trailers). Skip this for a stacked branch that is deliberately
+split into several commits, or whose PR a person has been involved in. A
+branch that already has exactly one commit has nothing to squash, but
+check that its message describes the whole change and carries `Closes #<n>`,
+and amend it if not (under the same exceptions).
+
 A hook blocks pull request creation until the current commit is recorded as
 reviewed. Record it only once every finding is either fixed or explicitly
 declined by the user, and all fixes are committed (the PR is built from
@@ -117,8 +144,8 @@ commits, so a reviewed HEAD with uncommitted fixes would be meaningless):
 git rev-parse HEAD > "$(git rev-parse --path-format=absolute --git-path pr-workflow-reviewed)"
 ```
 
-Any later commit changes HEAD, so the branch needs a fresh review before the
-next PR.
+Any later commit or amend changes HEAD, so record only after the last
+amend, never by rewriting the marker, and review again before the next PR.
 
 ## 8. Report the outcome
 
