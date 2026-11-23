@@ -1,0 +1,59 @@
+schema_version: "1.0"
+name: submit-pr-squashes-to-one-commit-before-the-pr
+description: A branch that reaches PR creation with two commits is squashed into one curated commit, ending with the issue reference, before the review is recorded and the PR is created.
+tags: [submit-pr, review-branch]
+runs: 1
+context:
+  scaffold_script: scaffold.sh
+execution:
+  model: sonnet
+  max_turns: 40
+  timeout_seconds: 900
+  allowed_tools: [Read, Glob, Grep, Agent, Skill, "Bash(git:*)", "Bash(gh:*)", "Bash(python3:*)"]
+  prompt: |
+    Submit the current branch as a pull request. It implements issue #6.
+    This repository isn't on GitHub, so here is issue #6 in full, and look
+    nothing up:
+
+    ## Scope
+
+    Cap late fees at a maximum of 100.
+
+    ## Out of scope
+
+    Other changes to billing or reports.
+
+    ## Done when
+
+    `late_fee` never returns more than 100.
+
+    Carry out the stages up to creating the PR, but do not push or create
+    anything, and there is no remote. If the sandbox denies a command, give
+    the exact command you would run. Report the commits the branch has on
+    main when the review is recorded.
+graders:
+  - type: llm
+    name: squashes to one commit
+    criteria: >-
+      The response notices the branch has two commits on main and squashes
+      them into one commit before recording the review, with git reset --soft
+      followed by git commit (run, or given as the exact commands if the
+      sandbox denied them), so the branch ends with exactly one commit on
+      main.
+  - type: llm
+    name: message describes the whole change
+    criteria: >-
+      The response creates, or gives in the exact commit command, one commit
+      message that describes the change and contains `Closes #6`. Trailer
+      lines such as Co-Authored-By may follow it.
+  - type: llm
+    name: records the review after the squash
+    criteria: >-
+      The review is recorded (or the recording command is given) for the
+      squashed commit, after the squash and not before, and the marker is
+      only ever HEAD after the squash.
+  - type: tool_used
+    name: ran submit-pr
+    tool: Skill
+    input_match: submit-pr
+    arm: with-only

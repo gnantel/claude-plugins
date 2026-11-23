@@ -21,8 +21,17 @@ def has_merge_commits(base: str) -> bool:
     return bool(git("rev-list", "--merges", f"{base}..HEAD"))
 
 
+def sole_branch_commit(base: str) -> str:
+    commits = git("rev-list", f"{base}..HEAD").split()
+    return commits[0] if len(commits) == 1 else ""
+
+
 def last_branch_commit_touching(base: str, path: str) -> str:
     return git("log", "--format=%H", "-1", f"{base}..HEAD", "--", path)
+
+
+def is_inside_worktree(path: Path) -> bool:
+    return Path(git("rev-parse", "--show-toplevel")) in path.resolve().parents
 
 
 def is_rebasing() -> bool:

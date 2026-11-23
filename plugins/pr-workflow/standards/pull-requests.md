@@ -101,3 +101,24 @@ history is theirs to allow.
 A stacked PR whose parent was squash-merged uses
 `git rebase --onto origin/<default> <parent's old tip>`, which drops the
 parent's original commits, and is then retargeted to the default branch.
+
+## PR6. A PR reaches human review as one commit
+
+The branch has one commit on its base when the PR is opened, with a message
+that describes the whole change and ends with `Closes #<n>`, so it reads as
+one change and rebases cleanly.
+
+- **Amend by default.** Every later fix goes into that commit with
+  `git commit --amend`: the session's own corrections, `review-branch`
+  fixes and the Copilot loop's fixes. If a fix changes what the commit does,
+  update the message.
+- **Squash as a backstop.** Just before the review is recorded, a branch
+  with more than one commit on its base is squashed into one. The review
+  marker records HEAD, so it is recorded after the last amend and never
+  rewritten by hand.
+- **Replies don't cite hashes.** The commit is rewritten, so thread replies
+  say what changed.
+- **Once a person has reviewed, fixes are new commits.** Rewriting reviewed
+  history is theirs to allow (PR5).
+- **Exception:** a stacked branch deliberately split into several commits
+  keeps them.

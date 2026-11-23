@@ -43,9 +43,12 @@ Repeat for at most **5 rounds**:
      open for the user.
 3. **If you fixed anything,** run the project's format, lint and tests, then
    `push-round <round> [pr]`. It commits and pushes in the right mode
-   (folding fixes into their commits until a person has reviewed). Then
-   `reply` on each fixed thread with `Fixed in <short>: <what changed>` and
-   `resolve` it. If you fixed nothing, stop: Copilot won't review again
+   (folding fixes into the branch's single commit until a person has
+   reviewed; new commits afterwards). If a fix changes what the commit does,
+   write the updated message to a file outside the working tree (push-round
+   refuses one inside it) and pass `--message-file <file>`. The
+   commit is rewritten, so its hash won't last: `reply` on each fixed thread
+   with `Fixed: <what changed>`, with no hash, and `resolve` it. If you fixed nothing, stop: Copilot won't review again
    without a new commit. This includes a round whose comments are all
    declined: end the loop there.
 
@@ -62,6 +65,6 @@ Never reply to, resolve or act on `human_threads`. Those are the user's.
 
 **Report** whether Copilot reviewed the final head (`head_reviewed`; if
 not, which head) and how many threads are open. Then the rounds run and how the loop ended, what was fixed (with
-commits), declined (with reasons) and declined as outside the issue (with
+what changed in each), declined (with reasons) and declined as outside the issue (with
 the follow-up issues created), and links to anything left for the user,
 including `human_threads`.

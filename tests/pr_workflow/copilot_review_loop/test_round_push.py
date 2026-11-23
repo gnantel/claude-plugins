@@ -42,13 +42,35 @@ def test_rewrite_adds_attribution_to_the_commit_a_fix_is_folded_into(repository,
     assert message.count(round_push.CO_AUTHOR_TRAILER) == 1
 
 
-def test_rewrite_puts_a_new_file_in_a_round_commit(repository, pull_request, rewrite_mode) -> None:
+def test_rewrite_puts_a_new_file_in_a_round_commit_on_a_multi_commit_branch(repository, pull_request, rewrite_mode) -> None:
+    repository.commit("Add cli", **{"cli.py": "v1"})
     repository.commit("Add parser", **{"parser.py": "v1"})
     repository.push()
     repository.write("helper.py", "new")
     push_round_for_pull_request(pull_request)
-    assert repository.remote_subjects() == ["Address Copilot review (round 3)", "Add parser"]
+    assert repository.remote_subjects() == ["Address Copilot review (round 3)", "Add parser", "Add cli"]
     assert round_push.CO_AUTHOR_TRAILER in repository.remote_message(r"Address Copilot review (round 3)")
+
+
+def test_rewrite_folds_a_new_file_into_the_single_commit(repository, pull_request, rewrite_mode) -> None:
+    repository.commit("Add parser", **{"parser.py": "v1"})
+    repository.push()
+    repository.write("helper.py", "new")
+    push_round_for_pull_request(pull_request)
+    assert repository.remote_subjects() == ["Add parser"]
+    assert repository.remote_file("helper.py") == "new"
+
+
+def test_rewrite_replaces_the_message_of_the_single_commit(repository, pull_request, rewrite_mode) -> None:
+    repository.commit("Add parser", **{"parser.py": "v1"})
+    repository.push()
+    repository.write("parser.py", "v1 fixed")
+    pull_request()
+    round_push.push_round(1, 3, "Add parser and its validation\n\nCloses #5")
+    assert repository.remote_subjects() == ["Add parser and its validation"]
+    message = repository.remote_message("Add parser and its validation")
+    assert "Closes #5" in message
+    assert message.count(round_push.CO_AUTHOR_TRAILER) == 1
 
 
 def test_rewrite_folds_each_staged_file_into_its_own_commit(repository, pull_request, rewrite_mode) -> None:
@@ -91,8 +113,8 @@ def test_rewrite_leaves_the_parent_branch_of_a_stacked_pr_alone(repository, pull
     repository.push("child")
     repository.write("parent.py", "p fixed")
     push_round_for_pull_request(pull_request, base="feature", head_ref="child")
-    assert repository.remote_subjects("child", "origin/feature") == ["Address Copilot review (round 3)", "Child change"]
-    assert repository.git("rev-parse", "origin/child~2") == parent_commit
+    assert repository.remote_subjects("child", "origin/feature") == ["Child change"]
+    assert repository.git("rev-parse", "origin/child~1") == parent_commit
 
 
 def test_a_failed_rebase_pushes_the_unfolded_fixups(repository, pull_request, rewrite_mode, monkeypatch) -> None:

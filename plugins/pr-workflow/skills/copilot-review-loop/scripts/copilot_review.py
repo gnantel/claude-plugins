@@ -2,8 +2,11 @@
 
 import argparse
 import json
+import sys
+from pathlib import Path
 
 import github
+import local_git
 import review_state
 import round_push
 
@@ -43,7 +46,14 @@ def add_push_round_command(commands) -> None:
     command = commands.add_parser("push-round", help="Commit and push this round's fixes in the right mode.")
     command.add_argument("round", type=int, help="Round number, used in the commit message.")
     command.add_argument("pr", nargs="?", type=int, help="PR number (default: the current branch's PR).")
-    command.set_defaults(command=lambda args: round_push.push_round(args.pr, args.round))
+    command.add_argument("--message-file", type=Path, help="New message for the branch's single commit, when a fix changes what it does.")
+    command.set_defaults(command=lambda args: round_push.push_round(args.pr, args.round, read_message_file(args.message_file)))
+
+
+def read_message_file(path: Path | None) -> str | None:
+    if path and local_git.is_inside_worktree(path):
+        sys.exit("--message-file must be outside the working tree, or push-round would commit it.")
+    return path.read_text().strip() if path else None
 
 
 def add_thread_commands(commands) -> None:
