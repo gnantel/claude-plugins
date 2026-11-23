@@ -34,8 +34,16 @@ Run git commands from the repository root as plain `git ...` commands, with no
    helpers it calls. Judge each helper's placement against its first caller, so a
    helper shared by several callers is fine after the first one. Flag a helper
    placed before or far from its first caller; when the helper is unchanged,
-   report the finding on the changed caller. Accept a private utility used in many places in the file at
-   the bottom, and entry-point blocks the language puts at the bottom.
+   report the finding on the changed caller. Also check the order of the
+   public functions: they follow the order a caller uses them (entry-point
+   dispatch or main flow), and a public function belongs after the previous
+   public function's whole helper tree. Flag a public function placed between
+   another public function and that function's helpers, and one pushed below
+   helpers that belong to no preceding public function's tree and that it
+   doesn't need. Helpers of the preceding public functions' trees above it
+   are fine. A helper shared by two public functions belongs under the first
+   one. Accept a private utility used in many places in the file at the
+   bottom, and entry-point blocks the language puts at the bottom.
 6. For every finding, propose the concrete fix: name the functions to
    extract and show the resulting orchestrator or predicate.
 
