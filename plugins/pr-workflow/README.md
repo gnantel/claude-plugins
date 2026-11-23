@@ -15,7 +15,7 @@ creation, and the Copilot review loop.
 |---|---|
 | `skills/review-branch/SKILL.md` | `/pr-workflow:review-branch`: runs every enabled review plugin's reviewers in parallel; never creates a PR |
 | `skills/submit-pr/SKILL.md` | `/pr-workflow:submit-pr`: review, create the PR, Copilot loop, re-review of the loop's commits, then report it ready for human review |
-| `skills/issues/` | Issue-first work: find or create the change's leaf issue, split work into sub-issues, with a helper script |
+| `skills/issues/` | Issue-first work: find or create the change's leaf issue, split work into sub-issues, brief child sessions, with a helper script |
 | `skills/copilot-review-loop/` | `/pr-workflow:copilot-review-loop`: addresses Copilot's PR review round after round until it has no new comments |
 | `agents/scope-reviewer.md` | Reviewer (Sonnet): the diff must serve the branch's one leaf issue |
 | `standards/pull-requests.md` | The rules PR1–PR4 |
