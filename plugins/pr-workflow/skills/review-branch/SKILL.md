@@ -97,6 +97,13 @@ If there are no findings, say the branch is clean.
 - With `--fix`: apply every fix, then run the project's format, lint and
   test commands (`just fmt`, `just lint`, `just test` if a justfile exists;
   otherwise the project's own tooling) and report the results.
+- Before the first amend or squash of a branch that is already pushed
+  (here or in step 7), fetch it and check that its remote tip is an
+  ancestor of `HEAD` (`git merge-base --is-ancestor <remote tip> HEAD`).
+  If not, stop and ask the user to sync: a later lease push would discard
+  the commits the remote has and `HEAD` lacks. Note that tip; before each
+  later rewrite only check that the remote is still at it, since your own
+  rewrites make it a non-ancestor.
 - Fold every fix into the branch's single commit with
   `git commit --amend` (rule PR6) instead of adding a commit, and update the
   message if a fix changes what the commit does. A branch that already has

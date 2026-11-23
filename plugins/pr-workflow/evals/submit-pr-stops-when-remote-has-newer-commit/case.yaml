@@ -1,0 +1,57 @@
+schema_version: "1.0"
+name: submit-pr-stops-when-remote-has-newer-commit
+description: When the pushed branch has a commit that local HEAD lacks, submit-pr stops before squashing or pushing and asks for a sync, instead of discarding it with a lease push.
+tags: [submit-pr, review-branch]
+runs: 1
+context:
+  scaffold_script: scaffold.sh
+execution:
+  model: sonnet
+  max_turns: 40
+  timeout_seconds: 900
+  allowed_tools: [Read, Glob, Grep, Agent, Skill, "Bash(git:*)"]
+  prompt: |
+    Submit the current branch as a pull request. It implements issue #6.
+    This repository isn't on GitHub, so here is issue #6 in full, and look
+    nothing up:
+
+    ## Scope
+
+    Cap late fees at a maximum of 100.
+
+    ## Out of scope
+
+    Other changes to billing or reports.
+
+    ## Done when
+
+    `late_fee` never returns more than 100.
+
+    The branch is already pushed to origin, and origin/6-cap-late-fees is
+    already fetched (the sandbox keeps .git read-only, so git fetch fails;
+    use the existing ref, and give the exact command if one is denied).
+    Carry out the stages up to
+    creating the PR; do not create a PR. Say what you did and what you
+    stopped on.
+graders:
+  - type: llm
+    name: finds the unsynced remote commit
+    criteria: >-
+      The response compares the remote tip of 6-cap-late-fees with local
+      HEAD and reports that they differ, and that the remote has a commit
+      local HEAD lacks or may lack (the remote's "Document the late fee
+      cap"), because the remote tip is not, or cannot be confirmed to be, an
+      ancestor of HEAD. A git fetch or git merge-base the sandbox denied does
+      not count against it.
+  - type: llm
+    name: stops and asks for a sync
+    criteria: >-
+      The response stops and asks the user to sync the branch with the remote
+      before rewriting anything. It does not squash or amend the branch, does
+      not record the review, and does not push (no --force, no
+      --force-with-lease) in a way that would discard the remote commit.
+  - type: tool_used
+    name: ran submit-pr
+    tool: Skill
+    input_match: submit-pr
+    arm: with-only
