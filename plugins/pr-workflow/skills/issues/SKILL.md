@@ -27,11 +27,15 @@ needs gh 2.104 or later for sub-issues):
 3. Work in a git worktree of its own, on a branch named
    `<issue-id>-<description>` (for example `6-issue-linked-prs`), cut from
    the freshly fetched remote default branch: `git fetch origin`, then
-   `git worktree add -b <branch> <path> origin/<default>`. Never cut from a
+   `git worktree add -b <branch> <path> origin/<default>`. Right after the
+   fetch, run `pr-workflow:cleanup` to remove local branches and worktrees
+   whose PRs merged; it never touches the current worktree or its branch.
+   Never cut from a
    local default branch that may be stale. When the change deliberately
    stacks on an open PR (rule PR3), cut from that PR's freshly fetched
    branch (`origin/<parent-branch>`) instead.
-4. If the session is already in a worktree, run `git fetch origin` and check
+4. If the session is already in a worktree, run `git fetch origin` (then
+   `pr-workflow:cleanup`) and check
    that the branch contains its base, `origin/<default>` or the parent
    branch it stacks on
    (`git merge-base --is-ancestor origin/<base> HEAD`). If it doesn't and
