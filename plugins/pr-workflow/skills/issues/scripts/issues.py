@@ -1,19 +1,22 @@
-"""Command-line helper for issue-first work: shows an issue with all its comments and sub-issues, finds the issue a branch implements, creates issues, and links sub-issues. Requires gh 2.104 or later for sub-issue support."""
+"""Command-line helper for issue-first work: shows an issue with all its comments and sub-issues, finds the issue a branch implements, creates issues, links sub-issues, and renders the brief for a child session. Requires gh 2.104 or later for sub-issue support."""
 
 import argparse
 import json
 import re
 import subprocess
 import sys
+from pathlib import Path
 
 BRANCH_ISSUE_NUMBER = re.compile(r"(?:^|/)(\d+)-[^/]*$")
 TRUSTED_ASSOCIATIONS = {"OWNER", "MEMBER", "COLLABORATOR"}
+BRIEF_TEMPLATE = Path(__file__).resolve().parent.parent / "brief-template.md"
 ISSUE_FIELDS = "number,title,state,url,body,parent,subIssues"
 
 
 def main() -> None:
     args = parse_arguments()
-    print(json.dumps(args.command(args), indent=2))
+    output = args.command(args)
+    print(output if isinstance(output, str) else json.dumps(output, indent=2))
 
 
 def parse_arguments() -> argparse.Namespace:
@@ -34,6 +37,9 @@ def parse_arguments() -> argparse.Namespace:
     link.add_argument("parent", type=int)
     link.add_argument("child", type=int)
     link.set_defaults(command=lambda args: link_sub_issue(args.parent, args.child))
+    brief = commands.add_parser("brief", help="Print the brief for a child session implementing an issue.")
+    brief.add_argument("number", type=int)
+    brief.set_defaults(command=lambda args: brief_for_issue(args.number))
     return parser.parse_args()
 
 
@@ -103,6 +109,15 @@ def create_issue(title: str, body_file: str, parent: int | None, labels: list[st
 def link_sub_issue(parent: int, child: int) -> dict:
     gh("issue", "edit", str(parent), "--add-sub-issue", str(child))
     return {"parent": parent, "child": child}
+
+
+def brief_for_issue(number: int) -> str:
+    issue_summary = gh_json("issue", "view", str(number), "--json", "number,title")
+    return render_brief(BRIEF_TEMPLATE.read_text(), issue_summary["number"], issue_summary["title"], repository())
+
+
+def render_brief(template: str, number: int, title: str, repository_name: str) -> str:
+    return template.format(number=number, title=title, repository=repository_name)
 
 
 def repository() -> str:

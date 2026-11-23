@@ -1,0 +1,65 @@
+schema_version: "1.0"
+name: issues-delegation-brief
+description: Asked to delegate a leaf issue to a child session, the issues skill produces a brief with the fixed rules and marks the parts the planning session fills in.
+tags: [issues, delegation]
+runs: 1
+context:
+  scaffold_script: scaffold.sh
+execution:
+  model: sonnet
+  max_turns: 20
+  timeout_seconds: 600
+  allowed_tools: [Read, Glob, Grep, Skill, "Bash(git:*)", "Bash(python3:*)"]
+  prompt: |
+    Use the issues skill to write the brief for a child session that will
+    implement this issue. This repository isn't on GitHub, so don't call gh
+    and don't start a session: show me the brief you would give it.
+
+    Issue #7 in `acme/billing`, "Round invoice totals to the cent":
+
+      ## Scope
+      Invoice totals are summed as floats and show values like 10.299999.
+      Round each line to the cent before summing.
+
+      ## Out of scope
+      Currency conversion.
+
+      ## Done when
+      - The invoice total is rounded to the cent.
+      - Unit tests cover the rounding.
+
+    Another session is working on `src/export.py` in parallel.
+graders:
+  - type: llm
+    name: has the fixed rules
+    criteria: >-
+      The brief tells the session to read the issue in full including its
+      comments, fetch and base the branch on the latest origin default
+      branch in its own worktree, load the coding-standards skill, make one
+      PR closing only issue 7 and file anything out of scope as a new issue,
+      and keep docs free of changelog wording and counts of growing lists.
+  - type: llm
+    name: has the shipping rules
+    criteria: >-
+      The brief tells the session to keep one commit and amend later fixes
+      into it, verify Done when for real, ship with pr-workflow:submit-pr
+      (PR with Closes #7, Copilot loop, re-review, conflict check and
+      rebase), report whether Copilot reviewed the final head, never write
+      the review marker by hand, never merge, and ask the user only when a
+      decision is theirs.
+  - type: llm
+    name: fills in what it knows
+    criteria: >-
+      The brief names issue 7 and the repository acme/billing, and tells the
+      session to stay out of src/export.py.
+  - type: llm
+    name: leaves the rest for the planning session
+    criteria: >-
+      The brief leaves the version-bump policy unstated: its line for it is
+      still a placeholder (such as a FILL marker) or the response asks the
+      user about it. The request never said whether to skip version bumps.
+  - type: tool_used
+    name: ran the issues skill
+    tool: Skill
+    input_match: issues
+    arm: with-only

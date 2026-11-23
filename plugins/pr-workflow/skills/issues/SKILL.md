@@ -14,6 +14,7 @@ needs gh 2.104 or later for sub-issues):
 | `for-branch` | The issue the current branch implements: its PR's closing issue (refused if it's in another repository), or the `<issue-id>-` branch name, marked `stacked` when the PR isn't based on the default branch |
 | `create --title <t> --body-file <path> [--parent <n>] [--label <l>]` | Creates an issue, as a sub-issue if `--parent` is given |
 | `link <parent> <child>` | Makes an existing issue a sub-issue |
+| `brief <n>` | Prints the brief for a child session implementing the issue: the fixed rules filled in with the issue number, title and repository, and the parts that vary marked `<<FILL: ...>>` (plain text, not JSON) |
 
 ## Before starting a change
 
@@ -69,3 +70,37 @@ needs gh 2.104 or later for sub-issues):
 ## Opening the PR
 
 The description includes `Closes #<n>` for exactly one leaf issue.
+
+## Delegating to child sessions
+
+A planning session writes leaf issues, then starts one child session per
+issue, usually on a cheaper model. The child starts with a fresh context, so
+its brief is the strongest lever for getting it to follow the rules.
+
+1. Run `brief <n>` for the issue. The fixed rules (read the issue and its
+   comments, fetch and branch from `origin/<default>`, load
+   `coding-standards`, one PR per leaf issue, docs describe what is true,
+   one commit amended in place, verify Done when for real, ship with
+   `pr-workflow:submit-pr`, never write the review marker or merge, ask only
+   for the user's decisions) live in `brief-template.md` next to this file.
+   Edit the template to change them for every brief. If the issue isn't on
+   GitHub, fill in `{number}`, `{title}` and `{repository}` in the template
+   by hand.
+2. Replace each `<<FILL: ...>>` line, or delete it when it doesn't apply:
+   the files or area, how to verify Done when for this issue, sibling
+   sessions and the files to stay out of, whether to skip version bumps
+   while a batch runs, and extra context (name translations for issues
+   written before a reorganisation, the threat model, known tooling
+   problems). Fill in only what the request or the issue states. A part
+   nobody has decided, such as the version-bump policy, stays marked and is
+   put to the user, never guessed.
+3. Start the child session with the finished brief.
+
+Running several child sessions at once:
+
+- Each needs its own worktree. Starting them from a session opened on a
+  folder that isn't a git repository (such as `~/work`) makes them share
+  one checkout.
+- Group issues so that no two running sessions touch the same files, and
+  order the rest by dependency (see "Sizing and splitting").
+- Keep only a few sessions running at once, to stay within usage limits.
