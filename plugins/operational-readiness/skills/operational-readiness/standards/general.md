@@ -143,12 +143,17 @@ frameworks automatically; check that before adding spans by hand.
 - Async work, thread pools and background tasks started from a span keep the
   parent context, so the work stays in the same trace.
 
-### OT3. Spans carry useful, bounded attributes
+### OT3. Spans carry useful, safe attributes
 
 Attributes identify what the operation acted on and follow the project's
-semantic conventions (OpenTelemetry semantic conventions where used). Names
-and values have bounded cardinality (as OM3), and contain no secrets or
-personal data (as OL5).
+semantic conventions (OpenTelemetry semantic conventions where used).
+
+- Attribute keys are a small, fixed set, never built from data.
+- Values may be high-cardinality (order, model or request IDs, request
+  lengths): that is what makes a trace searchable. Keep them small: no
+  payloads or whole bodies.
+- No secrets or personal data (as OL5).
+- An attribute that is also used as a metric label is bounded there (OM3).
 
 ### OT4. Errors are recorded on the span
 

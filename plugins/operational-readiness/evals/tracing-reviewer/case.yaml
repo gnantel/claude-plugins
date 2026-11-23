@@ -32,7 +32,9 @@ graders:
     name: accepts the traced call
     criteria: >-
       The response does not say `fetch_tracking` lacks a span. Suggestions
-      about recording errors on that span are fine.
+      about recording errors on that span are fine. It does not object to the
+      tracking ID being used as a span attribute value because it is
+      high-cardinality.
   - type: tool_used
     name: ran the tracing-reviewer
     tool: Agent

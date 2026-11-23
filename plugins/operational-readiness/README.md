@@ -17,7 +17,7 @@ join `/pr-workflow:review-branch` automatically.
 | `agents/metrics-reviewer.md` | Metrics added, updated and removed with behavior; label cardinality; naming |
 | `agents/logging-reviewer.md` | Structured logging, significant events, levels, error context, no secrets |
 | `agents/resilience-reviewer.md` | Timeouts, safe retries, failure paths, circuit breaking on external calls |
-| `agents/tracing-reviewer.md` | Spans on important operations, context propagation, bounded span attributes, errors on spans, trace IDs in logs |
+| `agents/tracing-reviewer.md` | Spans on important operations, context propagation, safe span attributes, errors on spans, trace IDs in logs |
 
 Each project describes its own tools in `.claude/operational.md`, for example:
 

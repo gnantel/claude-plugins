@@ -1,6 +1,6 @@
 ---
 name: tracing-reviewer
-description: Reviews changed service code against the operational standards for tracing only - important operations as spans (OT1), trace context propagation (OT2), bounded attributes without secrets (OT3), errors recorded on spans (OT4) and trace IDs in logs (OT5). Use from /review-branch or when asked to review tracing.
+description: Reviews changed service code against the operational standards for tracing only - important operations as spans (OT1), trace context propagation (OT2), attribute keys, size and safety (OT3), errors recorded on spans (OT4) and trace IDs in logs (OT5). Use from /review-branch or when asked to review tracing.
 tools: Read, Grep, Glob, Bash
 model: sonnet
 ---
@@ -33,8 +33,9 @@ Run git commands from the repository root as plain `git ...` commands, with no
    - Outbound requests or published messages that do not inject trace
      context, inbound ones that do not extract it, and async or thread
      hand-offs that lose the parent span.
-   - Span attributes that are unbounded, off the semantic conventions, or
-     hold secrets or personal data.
+   - Span attribute keys built from data, attributes off the semantic
+     conventions, values that carry payloads or whole bodies, or secrets or
+     personal data. High-cardinality values (IDs, lengths) are fine.
    - Failures that are not recorded on the span or leave its status unset, or
      recovered failures marked as errors.
    - Log records that lack trace and span IDs where the project's logging

@@ -49,6 +49,7 @@ def fetch_all_quotes(carrier_urls, parcel):
 
 def fetch_tracking(tracking_url, tracking_id):
     with tracer.start_as_current_span("fetch tracking"):
+        trace.get_current_span().set_attribute("shipping.tracking_id", tracking_id)
         headers = {}
         inject(headers)
         response = httpx.get(tracking_url, params={"id": tracking_id}, headers=headers, timeout=2.0)
