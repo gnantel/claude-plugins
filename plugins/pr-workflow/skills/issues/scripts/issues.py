@@ -3,9 +3,13 @@
 import argparse
 import json
 import re
-import subprocess
 import sys
 from pathlib import Path
+
+sys.path.insert(0, str(Path(__file__).resolve().parents[3]))
+
+from cli_tools import gh, git
+from cli_tools.command import CommandFailed
 
 BRANCH_ISSUE_NUMBER = re.compile(r"(?:^|/)(\d+)-[^/]*$")
 TRUSTED_ASSOCIATIONS = {"OWNER", "MEMBER", "COLLABORATOR"}
@@ -15,7 +19,10 @@ ISSUE_FIELDS = "number,title,state,url,body,parent,subIssues"
 
 def main() -> None:
     args = parse_arguments()
-    output = args.command(args)
+    try:
+        output = args.command(args)
+    except CommandFailed as failure:
+        sys.exit(str(failure))
     print(output if isinstance(output, str) else json.dumps(output, indent=2))
 
 
@@ -44,7 +51,7 @@ def parse_arguments() -> argparse.Namespace:
 
 
 def issue(number: int) -> dict:
-    found = gh_json("issue", "view", str(number), "--json", ISSUE_FIELDS)
+    found = gh.read_json("issue", "view", str(number), "--json", ISSUE_FIELDS)
     sub_issues = [{"number": sub["number"], "title": sub["title"], "state": sub["state"]}
                   for sub in (found.get("subIssues") or {}).get("nodes", [])]
     return {
@@ -61,15 +68,15 @@ def issue(number: int) -> dict:
 
 
 def all_comments(number: int) -> list[dict]:
-    pages = gh_json("api", "--paginate", "--slurp", f"repos/{repository()}/issues/{number}/comments")
+    comments = gh.paginate(f"repos/{repository()}/issues/{number}/comments")
     return [{"author": (comment.get("user") or {}).get("login"),
              "trusted": comment.get("author_association") in TRUSTED_ASSOCIATIONS,
              "body": comment["body"]}
-            for page in pages for comment in page]
+            for comment in comments]
 
 
 def issue_for_branch() -> dict:
-    pull = gh_json("pr", "view", "--json", "closingIssuesReferences,baseRefName", allow_failure=True)
+    pull = gh.read_json("pr", "view", "--json", "closingIssuesReferences,baseRefName", allow_failure=True)
     references = (pull or {}).get("closingIssuesReferences", [])
     if len(references) > 1:
         return {"error": "The PR closes several issues; it must close exactly one leaf issue."}
@@ -81,7 +88,7 @@ def issue_for_branch() -> dict:
 
 
 def issue_from_branch_name(stacked: bool) -> dict:
-    branch_number = BRANCH_ISSUE_NUMBER.search(git("branch", "--show-current"))
+    branch_number = BRANCH_ISSUE_NUMBER.search(git.read("branch", "--show-current", allow_failure=True))
     if branch_number is None:
         return {"error": "No issue found: the branch has no PR closing an issue, and the last segment of its name doesn't start with one."}
     found = issue(int(branch_number.group(1)))
@@ -102,17 +109,17 @@ def create_issue(title: str, body_file: str, parent: int | None, labels: list[st
         arguments += ["--parent", str(parent)]
     for label in labels:
         arguments += ["--label", label]
-    url = gh(*arguments).strip()
+    url = gh.read(*arguments)
     return {"number": int(url.rsplit("/", 1)[1]), "url": url, "parent": parent}
 
 
 def link_sub_issue(parent: int, child: int) -> dict:
-    gh("issue", "edit", str(parent), "--add-sub-issue", str(child))
+    gh.run("issue", "edit", str(parent), "--add-sub-issue", str(child))
     return {"parent": parent, "child": child}
 
 
 def brief_for_issue(number: int) -> str:
-    issue_summary = gh_json("issue", "view", str(number), "--json", "number,title")
+    issue_summary = gh.read_json("issue", "view", str(number), "--json", "number,title")
     return render_brief(BRIEF_TEMPLATE.read_text(), issue_summary["number"], issue_summary["title"], repository())
 
 
@@ -121,29 +128,11 @@ def render_brief(template: str, number: int, title: str, repository_name: str) -
 
 
 def repository() -> str:
-    return gh_json("repo", "view", "--json", "nameWithOwner")["nameWithOwner"]
+    return gh.read_json("repo", "view", "--json", "nameWithOwner")["nameWithOwner"]
 
 
 def default_branch() -> str:
-    return gh_json("repo", "view", "--json", "defaultBranchRef")["defaultBranchRef"]["name"]
-
-
-def gh_json(*arguments: str, allow_failure: bool = False):
-    output = gh(*arguments, allow_failure=allow_failure)
-    return json.loads(output) if output else None
-
-
-def gh(*arguments: str, allow_failure: bool = False) -> str:
-    result = subprocess.run(["gh", *arguments], capture_output=True, text=True)
-    if result.returncode != 0:
-        if allow_failure:
-            return ""
-        sys.exit(f"gh {' '.join(arguments[:2])} failed: {result.stderr.strip()}")
-    return result.stdout
-
-
-def git(*arguments: str) -> str:
-    return subprocess.run(["git", *arguments], capture_output=True, text=True).stdout.strip()
+    return gh.read_json("repo", "view", "--json", "defaultBranchRef")["defaultBranchRef"]["name"]
 
 
 if __name__ == "__main__":

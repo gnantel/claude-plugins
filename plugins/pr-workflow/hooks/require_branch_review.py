@@ -4,8 +4,13 @@ It is a guard rail against forgetting the review, not a security boundary: contr
 
 import json
 import re
-import subprocess
 import sys
+from pathlib import Path
+
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
+
+from cli_tools import git as git_cli
+from cli_tools.command import CommandFailed
 
 REVIEW_MARKER = "pr-workflow-reviewed"
 COMMAND_START = r"(?:^|[;&|()`\n]|\{(?=\s))\s*(?:(?:then|do|else|elif|if|while|until|!)\s+)*"
@@ -91,8 +96,10 @@ def read_reviewed_commit(repo_dir: str) -> str | None:
 
 
 def git(repo_dir: str, *args: str) -> str | None:
-    result = subprocess.run(["git", "-C", repo_dir, *args], capture_output=True, text=True)
-    return result.stdout.strip() if result.returncode == 0 else None
+    try:
+        return git_cli.read(*args, cwd=repo_dir)
+    except CommandFailed:
+        return None
 
 
 def block() -> None:

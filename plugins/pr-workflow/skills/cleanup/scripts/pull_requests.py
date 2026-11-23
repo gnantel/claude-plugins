@@ -1,9 +1,13 @@
 """Looks up a repository's default branch and the pull requests of a branch through the GitHub CLI."""
 
 import json
-import subprocess
+import sys
 from dataclasses import dataclass
 from pathlib import Path
+
+sys.path.insert(0, str(Path(__file__).resolve().parents[3]))
+
+from cli_tools import gh as gh_cli
 
 
 @dataclass(frozen=True)
@@ -28,6 +32,4 @@ class GitHubPullRequests:
                 for pull in json.loads(listing)]
 
     def gh(self, *arguments: str) -> str:
-        completed = subprocess.run(["gh", *arguments], cwd=self.directory,
-                                   capture_output=True, text=True, check=True)
-        return completed.stdout.strip()
+        return gh_cli.read(*arguments, cwd=self.directory)

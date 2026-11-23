@@ -3,6 +3,7 @@
 import pytest
 
 import issues
+from cli_tools import gh
 
 FIXED_PARTS = [
     "gh issue view 19 --comments",
@@ -56,7 +57,7 @@ def test_the_brief_command_prints_the_rendered_brief_as_plain_text(monkeypatch: 
         requests.append(arguments)
         return {"number": 19, "title": "Delegation brief"}
 
-    monkeypatch.setattr(issues, "gh_json", fake_gh_json)
+    monkeypatch.setattr(gh, "read_json", fake_gh_json)
     monkeypatch.setattr(issues, "repository", lambda: "owner/repo")
     monkeypatch.setattr("sys.argv", ["issues.py", "brief", "19"])
 

@@ -3,10 +3,11 @@
 import pytest
 
 import issues
+from cli_tools import git
 
 
 def found_issue_number(monkeypatch: pytest.MonkeyPatch, branch: str) -> int | None:
-    monkeypatch.setattr(issues, "git", lambda *arguments: branch)
+    monkeypatch.setattr(git, "read", lambda *arguments, **options: branch)
     monkeypatch.setattr(issues, "issue", lambda number: {"number": number})
     return issues.issue_from_branch_name(stacked=False).get("number")
 

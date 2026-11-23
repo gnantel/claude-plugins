@@ -1,8 +1,11 @@
 """Local git operations for the Copilot review loop: the current head, working tree state, the branch's own commits, and changed paths."""
 
-import subprocess
 import sys
 from pathlib import Path
+
+sys.path.insert(0, str(Path(__file__).resolve().parents[3]))
+
+from cli_tools import git as git_cli
 
 
 def head() -> str:
@@ -58,21 +61,17 @@ def subject_of(commit: str) -> str:
 
 
 def with_trailer(message: str, trailer: str) -> str:
-    result = subprocess.run(["git", "interpret-trailers", "--if-exists", "addIfDifferent", "--trailer", trailer],
-                            input=message + "\n", capture_output=True, text=True, check=True)
-    return result.stdout.rstrip("\n")
+    return git_cli.run("interpret-trailers", "--if-exists", "addIfDifferent", "--trailer", trailer,
+                       stdin=message + "\n").rstrip("\n")
 
 
 def git(*arguments: str, allow_failure: bool = False) -> str:
-    return raw_git(*arguments, allow_failure=allow_failure).strip()
+    return git_cli.read(*arguments, allow_failure=allow_failure)
 
 
 def raw_git(*arguments: str, allow_failure: bool = False, environment: dict | None = None) -> str:
-    result = subprocess.run(["git", *arguments], capture_output=True, text=True, env=environment)
-    if result.returncode != 0 and not allow_failure:
-        sys.exit(f"git {arguments[0]} failed: {result.stderr.strip()}")
-    return result.stdout if result.returncode == 0 else ""
+    return git_cli.run(*arguments, env=environment, allow_failure=allow_failure)
 
 
 def succeeds(*arguments: str, environment: dict | None = None) -> bool:
-    return subprocess.run(["git", *arguments], capture_output=True, text=True, env=environment).returncode == 0
+    return git_cli.succeeds(*arguments, env=environment)
