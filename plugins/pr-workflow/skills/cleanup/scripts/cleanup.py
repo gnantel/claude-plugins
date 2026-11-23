@@ -1,10 +1,13 @@
 """Removes local branches whose pull request merged, and their clean worktrees, skipping anything that could lose work."""
 
 import argparse
-import subprocess
+import sys
 from dataclasses import dataclass
 from pathlib import Path
 
+sys.path.insert(0, str(Path(__file__).resolve().parents[3]))
+
+from cli_tools.command import CommandFailed
 from git_repository import GitRepository, Worktree
 from pull_requests import GitHubPullRequests, PullRequest
 
@@ -57,7 +60,7 @@ def clean_branch(branch: str, checkouts: list[Worktree], repository: GitReposito
     try:
         checked_head = repository.branch_head(branch)
         reason = reason_to_keep(branch, checked_head, worktree, repository, pull_requests)
-    except subprocess.CalledProcessError as failure:
+    except CommandFailed as failure:
         return Outcome(branch, SKIPPED, f"check failed: {failure.stderr.strip()}")
     if reason:
         return Outcome(branch, SKIPPED, reason)
@@ -128,11 +131,11 @@ def remove_branch_and_worktree(branch: str, checked_head: str, worktree: Worktre
     try:
         if worktree:
             repository.remove_worktree(worktree.path)
-    except subprocess.CalledProcessError as failure:
+    except CommandFailed as failure:
         return Outcome(branch, SKIPPED, f"git failed: {failure.stderr.strip()}")
     try:
         repository.delete_branch_at(branch, checked_head)
-    except subprocess.CalledProcessError as failure:
+    except CommandFailed as failure:
         return Outcome(branch, SKIPPED, f"git failed: {failure.stderr.strip()}{removed_worktree_note(worktree)}")
     return Outcome(branch, REMOVED, worktree_detail(worktree))
 

@@ -1,6 +1,7 @@
 [tool.pytest.ini_options]
 testpaths = ["tests"]
-pythonpath = ["plugins/pr-workflow/skills/copilot-review-loop/scripts",
+pythonpath = ["plugins/pr-workflow",
+    "plugins/pr-workflow/skills/copilot-review-loop/scripts",
     "plugins/pr-workflow/skills/issues/scripts",
     "plugins/pr-workflow/skills/cleanup/scripts"]
 addopts = "-p no:cacheprovider"

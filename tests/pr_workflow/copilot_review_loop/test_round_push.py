@@ -5,6 +5,7 @@ import pytest
 import local_git
 import review_state
 import round_push
+from cli_tools.command import CommandFailed
 
 
 @pytest.fixture
@@ -146,7 +147,7 @@ def test_the_force_push_is_refused_when_someone_else_pushed(repository, pull_req
     repository.git("push", "-q", cwd=other_clone)
     repository.git("fetch", "-q")
     repository.write("parser.py", "v1 fixed")
-    with pytest.raises(SystemExit):
+    with pytest.raises(CommandFailed):
         round_push.push_round(pull["number"], 3)
     assert "Someone else's commit" in repository.remote_subjects()
 

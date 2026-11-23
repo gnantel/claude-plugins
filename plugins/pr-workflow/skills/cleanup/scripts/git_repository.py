@@ -1,8 +1,12 @@
 """Runs the git commands that branch and worktree cleanup needs against one repository."""
 
-import subprocess
+import sys
 from dataclasses import dataclass
 from pathlib import Path
+
+sys.path.insert(0, str(Path(__file__).resolve().parents[3]))
+
+from cli_tools import git as git_cli
 
 
 BRANCH_PREFIX = "refs/heads/"
@@ -49,9 +53,7 @@ class GitRepository:
         self.git("update-ref", "-d", f"{BRANCH_PREFIX}{branch}", head)
 
     def git(self, *arguments: str) -> str:
-        completed = subprocess.run(["git", "-C", str(self.directory), *arguments],
-                                   capture_output=True, text=True, check=True)
-        return completed.stdout.removesuffix("\n")
+        return git_cli.run(*arguments, cwd=self.directory).removesuffix("\n")
 
 
 def parse_worktree(block: str) -> Worktree:

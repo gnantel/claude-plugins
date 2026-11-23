@@ -5,17 +5,23 @@ import json
 import sys
 from pathlib import Path
 
+sys.path.insert(0, str(Path(__file__).resolve().parents[3]))
+
 import github
 import local_git
 import review_state
 import round_push
+from cli_tools.command import CommandFailed
 
 DEFAULT_TIMEOUT_SECONDS = 900
 
 
 def main() -> None:
     args = parse_arguments()
-    print(json.dumps(args.command(args), indent=2))
+    try:
+        print(json.dumps(args.command(args), indent=2))
+    except CommandFailed as failure:
+        sys.exit(str(failure))
 
 
 def parse_arguments() -> argparse.Namespace:

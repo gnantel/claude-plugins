@@ -7,6 +7,11 @@ import subprocess
 import sys
 from pathlib import Path
 
+sys.path.insert(0, str(Path(__file__).resolve().parents[3]))
+
+from cli_tools import gh
+from cli_tools.command import CommandFailed
+
 ISSUES_HELPER = Path(__file__).resolve().parents[2] / "issues" / "scripts" / "issues.py"
 BRANCH_ISSUE_NUMBER = re.compile(r"(?:^|/)(\d+)-[^/]*$")
 
@@ -44,12 +49,11 @@ def issue_number(pull: dict) -> int | str:
 
 
 def current_pull(pull: dict) -> dict | str:
-    lookup = subprocess.run(["gh", "pr", "view", str(pull["number"]), "--repo", pull["repo"],
-                             "--json", "closingIssuesReferences,baseRefName,headRefName"],
-                            capture_output=True, text=True)
-    if lookup.returncode != 0:
-        return f"Couldn't read PR #{pull['number']}'s issue: {lookup.stderr.strip()}"
-    return json.loads(lookup.stdout)
+    try:
+        return gh.read_json("pr", "view", str(pull["number"]), "--repo", pull["repo"],
+                            "--json", "closingIssuesReferences,baseRefName,headRefName")
+    except CommandFailed as failure:
+        return f"Couldn't read PR #{pull['number']}'s issue: {failure.stderr}"
 
 
 def stacked_branch_issue(pull: dict, current: dict) -> int | str:
@@ -67,9 +71,8 @@ def reference_repository(reference: dict) -> str:
 
 
 def default_branch(repo: str) -> str | None:
-    lookup = subprocess.run(["gh", "repo", "view", repo, "--json", "defaultBranchRef"],
-                            capture_output=True, text=True)
-    return json.loads(lookup.stdout)["defaultBranchRef"]["name"] if lookup.returncode == 0 else None
+    repository = gh.read_json("repo", "view", repo, "--json", "defaultBranchRef", allow_failure=True)
+    return repository["defaultBranchRef"]["name"] if repository else None
 
 
 def run_helper(*arguments: str) -> dict:

@@ -1,8 +1,8 @@
 """Tests for removing merged local branches and their worktrees, and for what is kept and why."""
 
-import subprocess
 from pathlib import Path
 
+from cli_tools.command import CommandFailed
 from cleanup import Outcome, clean_branches
 from conftest import FakePullRequests, add_worktree, git
 from git_repository import GitRepository
@@ -196,7 +196,7 @@ def test_a_failing_lookup_skips_the_branch_and_the_rest_are_still_cleaned(
 
     def failing_for_one(branch: str):
         if branch == "7-broken":
-            raise subprocess.CalledProcessError(1, "gh", stderr="boom")
+            raise CommandFailed("gh pr list", "boom")
         return for_branch(branch)
 
     pull_requests.for_branch = failing_for_one
