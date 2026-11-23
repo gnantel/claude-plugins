@@ -250,7 +250,13 @@ A file reads like a narrative: the public API comes first, and each public
 function or method is followed by the private helpers it calls, in the order it
 calls them, depth first.
 
-- A helper called by several functions goes after its first caller.
+- Public functions appear in the order a caller uses them: the order of the
+  entry-point dispatch, or the main flow, when there is one.
+- A second public function goes after the first one's whole helper tree,
+  never between the first one and its helpers. It is followed by those of its
+  own helpers that are not already above it.
+- A helper called by several functions goes after its first caller, so a
+  helper two public functions share stays under the first one.
 - **Exception:** a private utility used in many places in the same file goes
   at the bottom.
 - Constants, types, imports and fields stay where the language expects them,
@@ -275,7 +281,23 @@ def render_receipt(order):
 def render_summary(order): ...
 ```
 
-Good:
+Bad (the second public function sits between the first one and its helpers):
+
+```python
+def render_receipt(order):
+    return _format_header(order) + _format_total(order)
+
+def render_summary(order):
+    return _format_header(order) + _format_count(order)
+
+def _format_header(order): ...
+def _format_total(order): ...
+def _format_count(order): ...
+```
+
+Good (two public functions that share `_format_header`; the shared helper
+stays under its first caller, and `render_summary` follows the whole
+`render_receipt` tree):
 
 ```python
 def render_receipt(order):
@@ -284,5 +306,8 @@ def render_receipt(order):
 def _format_header(order): ...
 def _format_total(order): ...
 
-def render_summary(order): ...
+def render_summary(order):
+    return _format_header(order) + _format_count(order)
+
+def _format_count(order): ...
 ```

@@ -17,8 +17,10 @@ Load it before writing or changing Java, Python, Rust or TypeScript code.
 - Tests live in separate files (Rust: `#[cfg(test)] #[path = "foo_tests.rs"]
   mod tests;` beside `foo.rs`; `tests.rs` beside a `mod.rs`). Never widen visibility or add test-only code for
   testability; interfaces/traits and injection are fine.
-- Order code top-down in call order: each public function is followed by
-  the private helpers it calls, depth first; a private utility used all
+- Order code top-down in call order: public functions in the order a
+  caller uses them, each followed by the private helpers it calls that
+  aren't already above it, depth first (the second public function goes
+  after the first one's whole helper tree); a private utility used all
   over the file goes at the bottom.
 - Write idiomatic code for each language (its standard library and
   established idioms); when unsure, work out the idiomatic way first. These

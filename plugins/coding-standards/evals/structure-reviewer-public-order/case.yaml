@@ -1,0 +1,30 @@
+schema_version: "1.0"
+name: structure-reviewer-public-order
+description: The call-order rule flags a second public function placed before the first one's helpers, and wants the helper both share under the first public function.
+tags: [reviewer, structure]
+runs: 1
+context:
+  scaffold_script: scaffold.sh
+execution:
+  model: sonnet
+  max_turns: 30
+  timeout_seconds: 600
+  allowed_tools: [Read, Glob, Grep, Agent, Skill, "Bash(git:*)"]
+  prompt: |
+    I'm about to open a pull request for the current branch. Review the
+    structure of its code against my coding standards: compare the branch
+    with `main`, and list each problem with its file and line. Don't edit
+    any files. If you have a dedicated reviewer agent for this, use it.
+graders:
+  - type: llm
+    name: flags the second public function
+    criteria: >-
+      The response says render_summary in receipts/rendering.py is placed
+      between render_receipt and its helpers, and proposes moving it after
+      render_receipt's helpers (_header_line and _total_line), keeping
+      _header_line under render_receipt, with _count_line after render_summary.
+  - type: tool_used
+    name: ran the structure-reviewer
+    tool: Agent
+    input_match: structure-reviewer
+    arm: with-only
