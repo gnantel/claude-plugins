@@ -62,7 +62,7 @@ def repository(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> ScratchReposi
 def pull_request(monkeypatch: pytest.MonkeyPatch):
     def stand_in(**overrides) -> dict:
         pull = {"repo": "owner/repo", "number": 1, "head": local_git.head(), "head_ref": "feature",
-                "base": "main", "from_fork": False, "rebase_merge_allowed": True, **overrides}
+                "base": "main", "from_fork": False, **overrides}
         monkeypatch.setattr(github, "pull_request", lambda number: pull)
         return pull
     return stand_in

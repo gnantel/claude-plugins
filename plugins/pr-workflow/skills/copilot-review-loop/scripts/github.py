@@ -51,7 +51,7 @@ mutation($thread: ID!) {
 def pull_request(number: int | None) -> dict:
     selector = [] if number is None else [str(number)]
     pull = gh.read_json("pr", "view", *selector, "--json", "number,headRefOid,headRefName,baseRefName,isCrossRepository")
-    repository = gh.read_json("repo", "view", "--json", "nameWithOwner,rebaseMergeAllowed")
+    repository = gh.read_json("repo", "view", "--json", "nameWithOwner")
     return {
         "repo": repository["nameWithOwner"],
         "number": pull["number"],
@@ -59,7 +59,6 @@ def pull_request(number: int | None) -> dict:
         "head_ref": pull["headRefName"],
         "base": pull["baseRefName"],
         "from_fork": pull["isCrossRepository"],
-        "rebase_merge_allowed": repository["rebaseMergeAllowed"],
     }
 
 

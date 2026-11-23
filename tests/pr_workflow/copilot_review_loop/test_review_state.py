@@ -8,7 +8,7 @@ import pr_issue
 import review_state
 
 PULL = {"repo": "owner/repo", "number": 1, "head": "abc", "head_ref": "1-x", "base": "main",
-        "from_fork": False, "rebase_merge_allowed": True}
+        "from_fork": False}
 PERSON = {"type": "User", "login": "author"}
 BOT = {"type": "Bot", "login": github.COPILOT_REST_LOGIN}
 
@@ -77,9 +77,10 @@ def test_merge_commits_on_the_branch_mean_new_commits(branch_with) -> None:
     assert review_state.commit_mode(PULL) == "new-commit"
 
 
-def test_repositories_without_rebase_merges_get_new_commits(branch_with) -> None:
-    branch_with()
-    assert review_state.commit_mode({**PULL, "rebase_merge_allowed": False}) == "new-commit"
+def test_a_bot_only_single_commit_branch_is_folded_whatever_the_merge_methods(repository, github_with) -> None:
+    repository.commit("Feature", **{"feature.txt": "feature"})
+    github_with(reviews=[review(BOT, body="Copilot summary")], threads=[COPILOT_THREAD])
+    assert review_state.commit_mode({**PULL, "head": local_git.head()}) == "rewrite"
 
 
 @pytest.fixture
