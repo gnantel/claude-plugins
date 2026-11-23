@@ -95,8 +95,12 @@ ones.
 
 ## 6. Report
 
-State that the PR is ready for human review, with its link, or why the
-Copilot loop stopped before that. Cover:
+Run the loop's `status` command (`copilot_review.py status`) on the PR
+for the final head. State that the PR is ready for human review, with its
+link, only if it reports `ready` (Copilot reviewed the final head, no
+threads open), which also covers commits that stages 4 and 5 pushed after
+the loop. Otherwise say so explicitly (which head is unreviewed, how many threads are
+open) and don't call it ready. If the loop stopped early, say why. Cover:
 
 - **Local review:** findings raised, fixed and declined.
 - **Copilot:** comments raised, fixed (with commits), declined (with

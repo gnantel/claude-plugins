@@ -1,4 +1,4 @@
-"""Command-line entry point for the Copilot review loop: next-round reports where the pull request stands, push-round commits and pushes fixes, and reply and resolve answer review threads."""
+"""Command-line entry point for the Copilot review loop: next-round reports where the pull request stands, status says whether its head is reviewed with no open threads, push-round commits and pushes fixes, and reply and resolve answer review threads."""
 
 import argparse
 import json
@@ -19,6 +19,7 @@ def parse_arguments() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description=__doc__)
     commands = parser.add_subparsers(required=True)
     add_next_round_command(commands)
+    add_status_command(commands)
     add_push_round_command(commands)
     add_thread_commands(commands)
     return parser.parse_args()
@@ -30,6 +31,12 @@ def add_next_round_command(commands) -> None:
     command.add_argument("--timeout", type=int, default=DEFAULT_TIMEOUT_SECONDS,
                          help="Seconds to wait for Copilot's review after requesting it.")
     command.set_defaults(command=lambda args: review_state.next_round(args.pr, args.timeout))
+
+
+def add_status_command(commands) -> None:
+    command = commands.add_parser("status", help="Report at once whether Copilot reviewed the PR head and how many threads are open.")
+    command.add_argument("pr", nargs="?", type=int, help="PR number (default: the current branch's PR).")
+    command.set_defaults(command=lambda args: review_state.head_status(args.pr))
 
 
 def add_push_round_command(commands) -> None:

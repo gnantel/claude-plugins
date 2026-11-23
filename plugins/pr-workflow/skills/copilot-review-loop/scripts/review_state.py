@@ -1,4 +1,4 @@
-"""Works out where a pull request stands in the Copilot review loop: waits for Copilot's review of the current head, then reports whether the loop is done, blocked, or has threads to address, the issue that bounds their scope, and how to commit the fixes."""
+"""Works out where a pull request stands in the Copilot review loop: reports whether its head is reviewed with no open threads, waits for Copilot's review of the current head, then reports whether the loop is done, blocked, or has threads to address, the issue that bounds their scope, and how to commit the fixes."""
 
 import time
 
@@ -109,3 +109,12 @@ def thread_url(thread: dict) -> str | None:
     comments = thread["comments"]["nodes"]
     return comments[0]["url"] if comments else None
 
+
+def head_status(number: int | None) -> dict:
+    pull = github.pull_request(number)
+    head = github.current_head(pull["repo"], pull["number"])
+    head_reviewed = copilot_review_of(pull, head) is not None
+    open_threads = len([thread for thread in github.review_threads(pull["repo"], pull["number"])
+                        if not thread["isResolved"]])
+    return {"head": head, "head_reviewed": head_reviewed, "open_threads": open_threads,
+            "ready": head_reviewed and open_threads == 0}

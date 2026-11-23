@@ -20,9 +20,10 @@ Repeat for at most **5 rounds**:
    - `address`: continue with its `copilot_threads` and `issue`. If `issue`
      has an `error`, stop and tell the user: without the PR's issue there is
      no scope to judge against.
-2. **Judge each Copilot thread, scope first.** Check it against the PR's
-   `issue` (its body, plus `trusted_comments`, which record later scope
-   decisions), then against the code and the project's standards:
+2. **Judge each Copilot thread, scope first, then value.** Check it
+   against the PR's `issue` (its body, plus `trusted_comments`, which record
+   later scope decisions), then against the code and the project's
+   standards:
    - **Outside the issue** (rule PR4): it asks for something the issue
      doesn't call for, such as a new feature, an unrelated fix or a refactor
      of code the issue doesn't need, however valid. Don't change code.
@@ -32,6 +33,10 @@ Repeat for at most **5 rounds**:
      this PR's own changes is within the issue, not outside it.
    - **Relevant and within the issue:** fix it, and keep the fix to what the
      comment asks.
+   - **Low value:** a speculative edge case, hardening beyond the threat
+     model the issue or the code's header states (a guard rail is not a
+     security boundary), or a style preference that conflicts with the
+     standards. `reply` with a short reason, then `resolve`.
    - **Wrong, already handled, outdated, or a repeat of one you declined:**
      `reply` with a short, specific reason, then `resolve`.
    - **Needs a design decision, or unclear whether it's in scope:** leave it
@@ -41,11 +46,22 @@ Repeat for at most **5 rounds**:
    (folding fixes into their commits until a person has reviewed). Then
    `reply` on each fixed thread with `Fixed in <short>: <what changed>` and
    `resolve` it. If you fixed nothing, stop: Copilot won't review again
-   without a new commit.
+   without a new commit. This includes a round whose comments are all
+   declined: end the loop there.
+
+**Final round.** Copilot reviews every push automatically. After the push
+of round 5's fixes, run `next-round` once more to wait for the review of
+that head. In it fix only correctness bugs; decline everything else with a
+reason. A fix pushed there makes the head unreviewed again: don't start
+another round, report it.
+
+Before the report, resolve what you declined, then run `status [pr]`. It
+returns at once with `head_reviewed`, `open_threads` and `ready`.
 
 Never reply to, resolve or act on `human_threads`. Those are the user's.
 
-**Report** the rounds run and how the loop ended, what was fixed (with
+**Report** whether Copilot reviewed the final head (`head_reviewed`; if
+not, which head) and how many threads are open. Then the rounds run and how the loop ended, what was fixed (with
 commits), declined (with reasons) and declined as outside the issue (with
 the follow-up issues created), and links to anything left for the user,
 including `human_threads`.
