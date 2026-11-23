@@ -17,7 +17,14 @@ Arguments: `$ARGUMENTS`, passed on to `review-branch`.
 
 If the branch is already pushed, note the remote tip first
 (`git ls-remote origin <branch>`): it is the lease if the review rewrites
-the branch.
+the branch. A repository with no `origin`, or a remote without the branch,
+has nothing to verify: go on to the review. Otherwise fetch the tip and
+check that it is an ancestor of local `HEAD`
+(`git merge-base --is-ancestor <noted tip> HEAD`). If it isn't, another
+session or a person pushed a commit that local `HEAD` lacks, and a rewrite
+plus lease push would discard it: stop, say which commits the remote has
+that local `HEAD` lacks, and ask the user to sync (rebase onto or merge the
+remote branch) before anything is rewritten.
 
 Run `pr-workflow:review-branch` with the arguments. Continue once it has
 recorded the review for the current commit. If it stopped (no leaf issue, a
@@ -60,7 +67,10 @@ Compare the pre-loop head with the current head (`git rev-parse HEAD`). If they 
 equal, the loop added no commits: skip this stage and say so in the report.
 
 If they differ, note the PR's head SHA (`gh pr view --json headRefOid`) as
-the lease, then run `pr-workflow:review-branch` again on the new head, with
+the lease. It must equal local `HEAD`: if it doesn't, a commit was pushed
+that the local branch lacks (or the push didn't land), so stop, report
+both SHAs and ask the user to sync instead of reviewing and rewriting.
+Otherwise run `pr-workflow:review-branch` again on the new head, with
 the same arguments. Its findings are handled as in stage 1: fixed
 (while only bots have reviewed, amended into the single commit and pushed
 with `git push --force-with-lease=<branch>:<noted SHA>`, never the amended local head; once a person has
