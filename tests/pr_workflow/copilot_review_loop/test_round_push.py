@@ -18,6 +18,10 @@ def new_commit_mode(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setattr(review_state, "commit_mode", lambda pull: "new-commit")
 
 
+SONNET = "Co-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>"
+OPUS = "Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
+
+
 def push_round_for_pull_request(pull_request, **overrides) -> dict:
     pull_request(**overrides)
     return round_push.push_round(1, 3)
@@ -33,14 +37,23 @@ def test_rewrite_folds_a_fix_into_the_commit_that_introduced_the_file(repository
     assert repository.remote_file("parser.py") == "v1 fixed"
 
 
-def test_rewrite_adds_attribution_to_the_commit_a_fix_is_folded_into(repository, pull_request, rewrite_mode) -> None:
-    repository.commit("Add parser\n\nParses the input.", **{"parser.py": "v1"})
+def test_rewrite_keeps_the_trailer_of_the_commit_a_fix_is_folded_into(repository, pull_request, rewrite_mode) -> None:
+    repository.commit(f"Add parser\n\nParses the input.\n\n{SONNET}", **{"parser.py": "v1"})
     repository.push()
     repository.write("parser.py", "v1 fixed")
     push_round_for_pull_request(pull_request)
     message = repository.remote_message("Add parser")
     assert "Parses the input." in message
-    assert message.count(round_push.CO_AUTHOR_TRAILER) == 1
+    assert message.count("Co-Authored-By:") == 1
+    assert SONNET in message
+
+
+def test_rewrite_adds_no_trailer_to_a_commit_without_one(repository, pull_request, rewrite_mode) -> None:
+    repository.commit("Add parser", **{"parser.py": "v1"})
+    repository.push()
+    repository.write("parser.py", "v1 fixed")
+    push_round_for_pull_request(pull_request)
+    assert "Co-Authored-By" not in repository.remote_message("Add parser")
 
 
 def test_rewrite_puts_a_new_file_in_a_round_commit_on_a_multi_commit_branch(repository, pull_request, rewrite_mode) -> None:
@@ -50,7 +63,18 @@ def test_rewrite_puts_a_new_file_in_a_round_commit_on_a_multi_commit_branch(repo
     repository.write("helper.py", "new")
     push_round_for_pull_request(pull_request)
     assert repository.remote_subjects() == ["Address Copilot review (round 3)", "Add parser", "Add cli"]
-    assert round_push.CO_AUTHOR_TRAILER in repository.remote_message(r"Address Copilot review (round 3)")
+    assert "Co-Authored-By" not in repository.remote_message(r"Address Copilot review (round 3)")
+
+
+def test_a_round_commit_takes_the_co_author_of_the_branch_head_not_of_a_folded_commit(repository, pull_request, rewrite_mode) -> None:
+    repository.commit(f"Add cli\n\n{SONNET}", **{"cli.py": "v1"})
+    repository.commit(f"Add parser\n\n{OPUS}", **{"parser.py": "v1"})
+    repository.push()
+    repository.write("cli.py", "v1 fixed")
+    repository.write("helper.py", "new")
+    push_round_for_pull_request(pull_request)
+    assert OPUS in repository.remote_message(r"Address Copilot review (round 3)")
+    assert SONNET in repository.remote_message("Add cli")
 
 
 def test_rewrite_folds_a_new_file_into_the_single_commit(repository, pull_request, rewrite_mode) -> None:
@@ -63,7 +87,7 @@ def test_rewrite_folds_a_new_file_into_the_single_commit(repository, pull_reques
 
 
 def test_rewrite_replaces_the_message_of_the_single_commit(repository, pull_request, rewrite_mode) -> None:
-    repository.commit("Add parser", **{"parser.py": "v1"})
+    repository.commit(f"Add parser\n\n{SONNET}", **{"parser.py": "v1"})
     repository.push()
     repository.write("parser.py", "v1 fixed")
     pull_request()
@@ -71,7 +95,19 @@ def test_rewrite_replaces_the_message_of_the_single_commit(repository, pull_requ
     assert repository.remote_subjects() == ["Add parser and its validation"]
     message = repository.remote_message("Add parser and its validation")
     assert "Closes #5" in message
-    assert message.count(round_push.CO_AUTHOR_TRAILER) == 1
+    assert message.count("Co-Authored-By:") == 1
+    assert SONNET in message
+
+
+def test_a_replacement_message_with_its_own_trailer_gets_no_second_one(repository, pull_request, rewrite_mode) -> None:
+    repository.commit(f"Add parser\n\n{SONNET}", **{"parser.py": "v1"})
+    repository.push()
+    repository.write("parser.py", "v1 fixed")
+    pull_request()
+    round_push.push_round(1, 3, f"Add parser and its validation\n\n{OPUS}")
+    message = repository.remote_message("Add parser and its validation")
+    assert message.count("Co-Authored-By:") == 1
+    assert OPUS in message
 
 
 def test_rewrite_folds_each_staged_file_into_its_own_commit(repository, pull_request, rewrite_mode) -> None:
@@ -127,13 +163,13 @@ def test_a_failed_rebase_pushes_the_unfolded_fixups(repository, pull_request, re
     assert repository.remote_subjects() == ["amend! Add parser", "Add parser"]
 
 
-def test_new_commit_mode_adds_an_attributed_round_commit(repository, pull_request, new_commit_mode) -> None:
-    repository.commit("Add parser", **{"parser.py": "v1"})
+def test_new_commit_mode_attributes_the_round_commit_to_the_branch_co_author(repository, pull_request, new_commit_mode) -> None:
+    repository.commit(f"Add parser\n\n{OPUS}", **{"parser.py": "v1"})
     repository.push()
     repository.write("parser.py", "v1 fixed")
     assert push_round_for_pull_request(pull_request)["mode"] == "new-commit"
     assert repository.remote_subjects() == ["Address Copilot review (round 3)", "Add parser"]
-    assert round_push.CO_AUTHOR_TRAILER in repository.remote_message(r"Address Copilot review (round 3)")
+    assert OPUS in repository.remote_message(r"Address Copilot review (round 3)")
 
 
 def test_the_force_push_is_refused_when_someone_else_pushed(repository, pull_request, rewrite_mode) -> None:

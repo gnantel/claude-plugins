@@ -66,13 +66,22 @@ def test_files_only_on_the_base_branch_have_no_branch_commit(repository) -> None
     assert local_git.last_branch_commit_touching(local_git.branch_base("main"), "base.txt") == ""
 
 
-def test_a_trailer_is_added_after_the_body(repository) -> None:
-    assert local_git.with_trailer("Subject\n\nBody text.", TRAILER) == f"Subject\n\nBody text.\n\n{TRAILER}"
+def test_co_author_trailers_are_read_from_a_message() -> None:
+    message = f"Subject\n\nBody.\n\nSigned-off-by: A <a@example.com>\n{TRAILER}"
+    assert local_git.co_author_trailers(message) == [TRAILER]
 
 
-def test_an_existing_trailer_is_not_duplicated(repository) -> None:
-    message = f"Subject\n\n{TRAILER}"
-    assert local_git.with_trailer(message, TRAILER) == message
+def test_the_default_co_author_is_added_after_the_body() -> None:
+    assert local_git.with_default_co_authors("Subject\n\nBody text.", [TRAILER]) == f"Subject\n\nBody text.\n\n{TRAILER}"
+
+
+def test_a_message_with_a_co_author_keeps_only_its_own() -> None:
+    message = "Subject\n\nCo-Authored-By: Other <other@example.com>"
+    assert local_git.with_default_co_authors(message, [TRAILER]) == message
+
+
+def test_no_default_co_author_adds_nothing() -> None:
+    assert local_git.with_default_co_authors("Subject", []) == "Subject"
 
 
 def test_a_rebase_stopped_on_a_conflict_is_not_an_emptied_commit(repository) -> None:

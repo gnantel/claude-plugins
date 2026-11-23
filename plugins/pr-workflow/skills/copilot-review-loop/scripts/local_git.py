@@ -60,8 +60,20 @@ def subject_of(commit: str) -> str:
     return git("log", "-1", "--format=%s", commit)
 
 
-def with_trailer(message: str, trailer: str) -> str:
-    return git_cli.run("interpret-trailers", "--if-exists", "addIfDifferent", "--trailer", trailer,
+def with_default_co_authors(message: str, co_authors: list[str]) -> str:
+    if co_author_trailers(message):
+        return message
+    return with_trailers(message, co_authors)
+
+
+def co_author_trailers(message: str) -> list[str]:
+    parsed = git_cli.run("interpret-trailers", "--only-trailers", "--parse", stdin=message + "\n")
+    return [line for line in parsed.splitlines() if line.lower().startswith("co-authored-by:")]
+
+
+def with_trailers(message: str, trailers: list[str]) -> str:
+    arguments = [argument for trailer in trailers for argument in ("--trailer", trailer)]
+    return git_cli.run("interpret-trailers", "--if-exists", "addIfDifferent", *arguments,
                        stdin=message + "\n").rstrip("\n")
 
 
