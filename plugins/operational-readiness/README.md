@@ -12,12 +12,13 @@ join `/pr-workflow:review-branch` automatically.
 
 | Path | Purpose |
 |---|---|
-| `skills/operational-readiness/standards/general.md` | The rules: metrics (OM), logging (OL), resilience (OR), tracing (OT) |
+| `skills/operational-readiness/standards/general.md` | The rules: metrics (OM), logging (OL), resilience (OR), tracing (OT), feature gating (OF) |
 | `skills/operational-readiness/SKILL.md` | Loads the rules before Claude writes service code |
 | `agents/metrics-reviewer.md` | Metrics added, updated and removed with behavior; label cardinality; naming |
 | `agents/logging-reviewer.md` | Structured logging, significant events, levels, error context, no secrets |
 | `agents/resilience-reviewer.md` | Timeouts, safe retries, failure paths, circuit breaking on external calls |
 | `agents/tracing-reviewer.md` | Spans on important operations, context propagation, safe span attributes, errors on spans, trace IDs in logs |
+| `agents/feature-flag-reviewer.md` | Gates on risky changes, flag versus configuration, OpenFeature API, resilient evaluation, one read per request, removable gating |
 
 Each project describes its own tools in `.claude/operational.md`, for example:
 
@@ -28,5 +29,6 @@ Each project describes its own tools in `.claude/operational.md`, for example:
 - Logging: SLF4J + Logback JSON encoder; every log has `request_id`.
 - Resilience: resilience4j; default retry 3 attempts, exponential backoff.
 - Tracing: OpenTelemetry; HTTP and DB clients auto-instrumented; semantic conventions for attributes.
+- Feature flags: OpenFeature through `app.flags`, flagd provider; names `<area>.<change>` in kebab-case.
 - Personal data: never log emails or names.
 ```

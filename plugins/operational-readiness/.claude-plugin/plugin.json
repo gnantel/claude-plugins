@@ -1,13 +1,14 @@
 {
   "name": "operational-readiness",
   "version": "0.1.0",
-  "description": "Operational review pack for services: metrics, structured logging, resilience of external calls, and tracing. Enable per project; its reviewers join /pr-workflow:review-branch automatically.",
+  "description": "Operational review pack for services: metrics, structured logging, resilience of external calls, tracing, and feature gating. Enable per project; its reviewers join /pr-workflow:review-branch automatically.",
   "license": "MIT",
   "keywords": [
     "code-review",
     "observability",
     "resilience",
-    "tracing"
+    "tracing",
+    "feature-flags"
   ],
   "author": {
     "name": "gnantel"
