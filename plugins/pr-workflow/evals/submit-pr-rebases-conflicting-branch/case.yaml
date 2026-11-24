@@ -21,8 +21,9 @@ execution:
     to it. Inspect it with read-only git commands, then give, in order, the
     exact commands you would run for this stage (fetch, rebase, tests, push)
     and how you would resolve any conflict. Then say which stages of
-    submit-pr run again after the push, and whether the PR can be reported ready
-    for human review at that point.
+    submit-pr run again after the push, naming each by its skill, and whether
+    the PR can be reported ready for human review right after the push. If
+    not, list every condition that must hold before it can be.
 graders:
   - type: llm
     name: rebases onto the latest base
@@ -40,5 +41,9 @@ graders:
   - type: llm
     name: not ready until mergeable
     criteria: >-
-      The response says the PR cannot yet be reported ready for human
-      review, and that it can be only once GitHub reports it MERGEABLE.
+      The response says the PR cannot be reported ready for human review
+      right after the push, and names GitHub reporting it MERGEABLE as a
+      condition that must hold before it can be. Other conditions it also
+      requires (repeated review stages, Copilot's review of the final head)
+      are fine. Fail it if MERGEABLE is not among the conditions, or if it
+      says the PR can be reported ready without waiting for MERGEABLE.
