@@ -3,7 +3,7 @@
 Applies to services and other long-running code. Each project's
 `.claude/operational.md` names the concrete tools and conventions (metrics
 library and naming, logging library and required fields, resilience library
-and default policies). Where it is silent, follow the codebase's existing
+and default policies, feature-flag setup). Where it is silent, follow the codebase's existing
 patterns. Each rule has an ID so reviews can cite it.
 
 > Draft: seeded from the first checks listed (metrics, logging, retries and
@@ -165,3 +165,71 @@ and recovered failures do not set error status (as OL3).
 
 Where the project's logging supports it, log records carry the current trace
 and span IDs, so a log line leads to its trace and back.
+
+## Feature gating (OF)
+
+A *flag* is a switch that turns new behavior on for some requests and off
+for others, and is meant to be removed once the behavior is the default.
+Follow the project's flag setup (its OpenFeature wrapper, provider and
+naming scheme); do not invent one.
+
+### OF1. Risky behavior is gated
+
+Gate new user-visible behavior, changed behavior on a hot or risky path
+(payments, auth, data writes, high-volume requests) and migrations. Pure
+refactors, internal tooling and code not yet reachable need no gate.
+
+### OF2. A flag is temporary; a setting is configuration
+
+- Use a **flag** for a rollout (per request or by percentage) of a change
+  that will become the default and lose its gate: a new pricing algorithm,
+  a rewritten checkout, a switch to a new storage backend.
+- Use **configuration** for a permanent, per-environment setting that
+  operators keep: limits, endpoints, timeouts, modes, an integration that
+  is on in some environments and never in others.
+
+A permanent setting built as a flag will never be removed; a temporary
+rollout built as configuration has no per-request control and no removal
+trail.
+
+### OF3. Evaluate through OpenFeature
+
+Code evaluates flags through the [OpenFeature](https://openfeature.dev)
+API, or the project's own wrapper around it, never through a vendor SDK
+directly. The provider behind it is a project choice. Prefer free or
+self-hostable providers (flagd, Unleash or Flagsmith open source) or the
+cloud's own service (Azure App Configuration, AWS AppConfig) over an extra
+paid service.
+
+### OF4. Evaluation is resilient
+
+Flag evaluation never blocks or fails a request. When the flag service is
+down or slow it returns the last-known values, or the code's defaults when
+there are none yet. Values refresh in the background. A stale or failing
+refresh is observable (as OR5) but silent to callers: the caller does not
+catch flag errors.
+
+### OF5. Flags are read once per request
+
+Read the flags at the start of a request (or message) into a snapshot, and
+pass it down or hold it in request scope. Every check in that request sees
+the same values, even if a flag changes mid-request. Building the snapshot
+may evaluate each flag once. Calling the flag client again after that, in
+the same request or from a loop, is a violation.
+
+### OF6. How to gate
+
+- The default is off: the old behavior.
+- The flag is checked at one clear decision point, not scattered through
+  the code.
+- Both paths are tested.
+- The flag's name follows the project's naming scheme.
+- The chosen path is observable: a metric label (bounded, OM3) or a span
+  attribute (OT3) shows which path ran.
+
+### OF7. Removable by design
+
+Shape the gated code so removing the flag later is a small, mechanical
+change: the new path and the old path are separate functions or classes
+chosen at the decision point, not interleaved conditionals, and the flag is
+not passed through unrelated layers.

@@ -1,6 +1,6 @@
 ---
 name: operational-readiness
-description: The user's operational standards for services - metrics for new or changed behavior, structured logging, retries, timeouts and fallbacks on every external call, and distributed tracing. Use before writing or changing service code that handles requests, calls external systems or emits telemetry, and when reviewing operational readiness.
+description: The user's operational standards for services - metrics for new or changed behavior, structured logging, retries, timeouts and fallbacks on every external call, distributed tracing, and feature flags for risky changes. Use before writing or changing service code that handles requests, calls external systems or emits telemetry, and when reviewing operational readiness.
 ---
 
 # Operational Readiness
@@ -8,12 +8,12 @@ description: The user's operational standards for services - metrics for new or 
 The rules are in the `standards/` directory next to this file:
 
 - `standards/general.md`: principles and rule IDs (OM metrics, OL logging,
-  OR resilience, OT tracing).
+  OR resilience, OT tracing, OF feature gating).
 
 Each project names its own tools in `.claude/operational.md` at the
 repository root: metrics library and naming scheme, logging library and
 required fields, resilience library and default policies, tracing library and
-attribute conventions. Read it before
+attribute conventions, feature-flag wrapper and naming. Read it before
 writing code. If it is missing, follow the conventions already in the
 codebase and tell the user the file would make reviews more precise.
 
@@ -27,3 +27,6 @@ The ones most often missed:
    is safe, and a defined fallback or failure path.
 4. **OT:** important operations are spans, trace context crosses every
    process boundary, and errors are recorded on the span.
+5. **OF:** risky new behavior goes behind a flag evaluated through
+   OpenFeature, read once per request, off by default and easy to remove;
+   permanent settings are configuration, not flags.

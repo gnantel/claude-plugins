@@ -18,7 +18,7 @@
     {
       "name": "operational-readiness",
       "source": "./plugins/operational-readiness",
-      "description": "Metrics, structured logging and resilience reviewers for services. Enable per project."
+      "description": "Metrics, logging, resilience, tracing and feature-gating reviewers for services. Enable per project."
     },
     {
       "name": "spring-boot",

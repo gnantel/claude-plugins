@@ -1,0 +1,62 @@
+schema_version: "1.0"
+name: feature-flag-reviewer
+description: The feature-gating rules flag an ungated risky change, a permanent setting built as a flag, a direct vendor SDK call and flags read twice in one request, and accept a correctly gated change.
+tags: [reviewer, feature-flags]
+runs: 1
+context:
+  scaffold_script: scaffold.sh
+execution:
+  model: sonnet
+  max_turns: 30
+  timeout_seconds: 600
+  allowed_tools: [Read, Glob, Grep, Agent, Skill, "Bash(git:*)"]
+  prompt: |
+    I'm about to open a pull request for the current branch of this service.
+    Review how it gates new behavior against my operational standards:
+    compare the branch with `main` and list what should change, with its file
+    and line. Don't edit any files.
+    If you have a dedicated reviewer agent for this, use it.
+graders:
+  - type: llm
+    name: flags the ungated risky change
+    criteria: >-
+      The response flags that orders are now always charged in installments
+      (`charge_order_in_installments`, as called from
+      `charge_order_within_limit`), a change to the payment path, with no
+      feature flag, and asks for it to be gated, off by default.
+  - type: llm
+    name: flags the permanent setting built as a flag
+    criteria: >-
+      The response says the `checkout.max-order-total` flag is a permanent
+      per-environment limit that belongs in configuration (settings), not in
+      a feature flag.
+  - type: llm
+    name: flags the direct vendor SDK call
+    criteria: >-
+      The response flags the LaunchDarkly SDK use for the `checkout.loyalty-banner`
+      flag (the `launchdarkly_server_sdk` import, its client or the
+      `show_loyalty_banner` call) as a vendor SDK evaluated directly, and asks
+      for the flag to be evaluated through OpenFeature, the project's
+      `checkout.flags` wrapper or its request snapshot instead.
+  - type: llm
+    name: flags the repeated flag reads
+    criteria: >-
+      The response flags that the `checkout.loyalty-discount` flag is read
+      from the flag client in both `apply_discount` and `summarize_order`
+      during one request, and asks for it to be read once, from the request's
+      snapshot, instead.
+  - type: llm
+    name: accepts the correctly gated change
+    criteria: >-
+      The response raises no finding against the `checkout.new-tax-engine`
+      gate (`price_order`, its two pricing functions, their `tax_engine_runs`
+      counter or `tests/test_pricing.py`): it is read from the request's
+      snapshot, defaults off, has separate old and new paths, shows which path
+      ran and has both paths tested. Saying nothing about it, or calling it
+      fine, counts as accepting it. Findings about other code, such as
+      `summarize_order` or the loyalty discount, do not count against it.
+  - type: tool_used
+    name: ran the feature-flag-reviewer
+    tool: Agent
+    input_match: feature-flag-reviewer
+    arm: with-only
