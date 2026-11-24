@@ -45,3 +45,10 @@ Extract to small `isX` / `hasX` / `canX` functions, including `.filter()` and
   branches in production code.
 - Prefer injecting dependencies (pass a client, clock or store) over
   `vi.mock` of internal modules when the design allows it.
+
+## TS5. Do not export unless used elsewhere (G14)
+
+- A function, type or constant used only inside its file is not exported.
+  Export only what other files import.
+- Class members that only their class uses are `#private` or `private`.
+- Never export an item so a test can import it (G9, TS4).

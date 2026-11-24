@@ -311,3 +311,40 @@ def render_summary(order):
 
 def _format_count(order): ...
 ```
+
+## G14. Narrowest visibility by default
+
+A function, method, type or constant that is not used outside its module or
+class is private: through the language's construct, or through its convention
+where the language has none. Widen visibility only when something outside
+really uses the item, and only as far as that user needs.
+
+**Why:** a small surface keeps a feature's entry points obvious (G10), and
+the reader and G13 can tell which functions are entry points and which are
+helpers.
+
+- Check who uses an item with a search before making it public or leaving it
+  unmarked.
+- Tests do not count as users (G9): test through the public surface, and
+  never widen an item, or strip its private marker, so a test can reach it.
+- The language files give each language's form: `private` in Java, a leading
+  `_` in Python, no `pub` in Rust, no `export` in TypeScript.
+
+Bad (`format_header` is only called inside this module, yet looks like an
+entry point):
+
+```python
+def render_receipt(order):
+    return format_header(order) + _format_total(order)
+
+def format_header(order): ...
+```
+
+Good:
+
+```python
+def render_receipt(order):
+    return _format_header(order) + _format_total(order)
+
+def _format_header(order): ...
+```

@@ -1,0 +1,43 @@
+schema_version: "1.0"
+name: organization-reviewer-visibility
+description: The visibility rule flags unmarked Python helpers only their module uses and a helper made public for a test, and accepts a public function another feature imports.
+tags: [reviewer, organization, visibility]
+runs: 1
+context:
+  scaffold_script: scaffold.sh
+execution:
+  model: sonnet
+  max_turns: 30
+  timeout_seconds: 600
+  allowed_tools: [Read, Glob, Grep, Agent, Skill, "Bash(git:*)"]
+  prompt: |
+    I'm about to open a pull request for the current branch. Review how its
+    new code is organized against my coding standards: compare the branch
+    with `main` and list what should change, with its file and line. Don't
+    edit any files.
+    If you have a dedicated reviewer agent for this, use it.
+graders:
+  - type: llm
+    name: flags the unmarked helpers
+    criteria: >-
+      The response flags `format_header` and `format_total` in
+      billing/invoices/receipts.py as helpers only that module uses, and says
+      they should be private (a leading underscore in Python).
+  - type: llm
+    name: flags the helper made public for a test
+    criteria: >-
+      The response flags `discount_cents` in billing/invoices/discounts.py,
+      which lost its leading underscore and was made public only so
+      tests/test_discounts.py can import it, and says it should go back to
+      `_discount_cents` and be tested through `discounted_total`.
+  - type: llm
+    name: accepts the public entry point
+    criteria: >-
+      The response does not ask to make `render_receipt` private. It says
+      nothing against it, or treats it as a legitimate public function
+      because billing/reports/monthly.py imports it.
+  - type: tool_used
+    name: ran the organization-reviewer
+    tool: Agent
+    input_match: organization-reviewer
+    arm: with-only

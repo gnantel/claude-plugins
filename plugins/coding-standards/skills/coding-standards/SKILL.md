@@ -33,6 +33,9 @@ The ones most often missed:
    that aren't already above it, depth first. A second public function goes
    after the first one's whole helper tree. A utility used all over the file
    goes at the bottom.
+8. **G14:** narrowest visibility by default: private unless something
+   outside the module or class uses it, through the construct or, in
+   Python, a leading `_`. Tests are not users.
 
 When you finish a change, check your own diff against these rules before
 reporting it done. For a full review, the user runs `/pr-workflow:review-branch`.

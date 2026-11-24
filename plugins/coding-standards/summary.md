@@ -25,3 +25,6 @@ Load it before writing or changing Java, Python, Rust or TypeScript code.
 - Write idiomatic code for each language (its standard library and
   established idioms); when unsure, work out the idiomatic way first. These
   explicit rules win where an idiom conflicts with them.
+- Narrowest visibility by default: private unless used outside the module
+  or class, through the construct (`private`, no `pub`, no `export`) or the
+  convention (Python's leading `_`). Tests are not users.

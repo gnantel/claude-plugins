@@ -53,3 +53,12 @@ comment (`dict[CustomerId, list[Invoice]]` says what `data` would not).
   or extract it into its own module where it is legitimately public.
 - Use dependency injection (pass a clock, client or repository in) rather than
   `monkeypatch`-ing internals when the design allows it.
+
+## PY6. Private by default with a leading underscore (G14)
+
+- Module-level functions, classes and constants that no other module imports
+  start with `_`. Methods and attributes that only their class uses start
+  with `_` too.
+- A name without `_` is part of the module's surface: another module imports
+  it, or it is an entry point such as `main`.
+- Never drop the `_` so a test can import the helper (G9, PY5).

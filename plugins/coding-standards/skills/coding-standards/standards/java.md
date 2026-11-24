@@ -50,6 +50,14 @@ invoices.stream().filter(this::isChargeable)
   interfaces, a `Clock` for time and real collaborators or test doubles that
   implement the interface.
 
+## JV5. Narrowest access modifier (G14)
+
+- Fields, methods and nested types are `private` unless something else uses
+  them. Package-private when other classes of the same package use them,
+  `protected` only for subclasses, and `public` only for what other packages
+  use. Never `public` by default.
+- Never widen an item so a test can reach it (G9, JV4).
+
 ## Spring Boot
 
 Spring Boot conventions live in the separate `spring-boot` plugin, enabled
