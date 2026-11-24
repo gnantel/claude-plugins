@@ -119,3 +119,49 @@ failing dependency cannot exhaust threads, connections or the caller.
 
 Retries, fallbacks and open circuits emit metrics (OM) and logs (OL2), so
 degraded behavior is visible rather than silent.
+
+## Tracing (OT)
+
+Follow the project's tracing library and conventions (OpenTelemetry where
+used). A *process boundary* is any point where work leaves or enters the
+process: HTTP/gRPC calls, database and cache calls, queue publishes and
+consumes, and thread or task hand-offs.
+
+### OT1. Important operations are spans
+
+Inbound requests, outbound calls (HTTP, RPC, database, queue), message
+handling and significant internal steps run inside a span with a clear,
+low-cardinality operation name (for example `GET /orders/{id}`, not
+`GET /orders/8431`). Many tracing libraries instrument common clients and
+frameworks automatically; check that before adding spans by hand.
+
+### OT2. Trace context propagates
+
+- Outbound requests and published messages inject the trace context into
+  headers or message metadata; inbound requests and consumed messages
+  extract it.
+- Async work, thread pools and background tasks started from a span keep the
+  parent context, so the work stays in the same trace.
+
+### OT3. Spans carry useful, safe attributes
+
+Attributes identify what the operation acted on and follow the project's
+semantic conventions (OpenTelemetry semantic conventions where used).
+
+- Attribute keys are a small, fixed set, never built from data.
+- Values may be high-cardinality (order, model or request IDs, request
+  lengths): that is what makes a trace searchable. Keep them small: no
+  payloads or whole bodies.
+- No secrets or personal data (as OL5).
+- An attribute that is also used as a metric label is bounded there (OM3).
+
+### OT4. Errors are recorded on the span
+
+A failed operation records the exception on its span and sets the span
+status to error, so a failed trace can be found without the logs. Handled
+and recovered failures do not set error status (as OL3).
+
+### OT5. Logs link to traces
+
+Where the project's logging supports it, log records carry the current trace
+and span IDs, so a log line leads to its trace and back.
