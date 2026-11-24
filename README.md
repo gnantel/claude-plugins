@@ -84,7 +84,12 @@ project template instead.
   without the plugin (one run per case), plus Sonnet grading of each answer. Every run prints its cost, and `--max-cost-usd`
   sets a ceiling.
 
-The evals grant `git`, `gh` and `python3` inside the eval sandbox, which on
+The evals grant `git`, `gh`, `python3` and `Edit` to every case, the tools
+the cases declare in `allowed_tools` that the eval runner gates. Keep the
+recipe in the `justfile` and the cases' `allowed_tools` in step: a tool a
+case declares but the recipe doesn't grant fails that case with `not
+granted`. The grants apply to every case in the run, and Bash commands and
+file writes still run inside the eval sandbox, which on
 Ubuntu needs `bubblewrap` and `socat` installed and an AppArmor profile for
 `bwrap` (see [sandboxing](https://code.claude.com/docs/en/sandboxing)).
 Results are written to each plugin's `evals/results/`, which git ignores.
