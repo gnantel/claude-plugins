@@ -76,3 +76,10 @@ mod tests;
   child test module already sees private items.
 - Test doubles come from traits: depend on a trait and implement it in the
   test module.
+
+## RS6. No `pub` unless used outside the module (G14)
+
+- Items, fields and methods start private. Add `pub(super)` or `pub(crate)`
+  when other modules of the crate use them, and `pub` only for what other
+  crates use. Prefer the narrower form.
+- Never widen an item so a test can reach it (G9, RS5).
