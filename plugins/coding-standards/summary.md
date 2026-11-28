@@ -28,3 +28,8 @@ Load it before writing or changing Java, Python, Rust or TypeScript code.
 - Narrowest visibility by default: private unless used outside the module
   or class, through the construct (`private`, no `pub`, no `export`) or the
   convention (Python's leading `_`). Tests are not users.
+- Don't duplicate logic: before writing it, search the repository, the
+  standard library and existing dependencies for what it does, not just its
+  name. Share between features through one feature's small surface or a
+  concept-named feature, never a `utils` grab bag. Look-alike code with
+  different rules is not duplication.

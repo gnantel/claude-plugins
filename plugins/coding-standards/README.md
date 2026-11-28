@@ -17,6 +17,17 @@ narrow style reviewers that join `/pr-workflow:review-branch`.
 | `agents/*-reviewer.md` | Style reviewers (Sonnet), each checking a narrow set of rule IDs |
 | `summary.md` | Short version to import into `~/.claude/CLAUDE.md` |
 
+## Reviewers
+
+| Reviewer | Checks |
+|---|---|
+| `comments-reviewer` | Comments, file headers and API docs |
+| `duplication-reviewer` | Logic that already exists in the repository, the standard library or a dependency |
+| `naming-reviewer` | Function names, extraction quality and variable names |
+| `organization-reviewer` | Feature-based organization and narrow visibility |
+| `structure-reviewer` | Orchestrators, function and file length, predicates and call order |
+| `test-separation-reviewer` | Separate tests and no test-only code in implementations |
+
 ## Use
 
 - Writing code: the `coding-standards` skill loads automatically.

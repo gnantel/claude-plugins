@@ -1,0 +1,44 @@
+schema_version: "1.0"
+name: duplication-reviewer
+description: The duplication rule flags a new helper that duplicates an existing one under another name and a hand-rolled standard-library function, and accepts a look-alike fee that is a different business rule.
+tags: [reviewer, duplication]
+runs: 1
+context:
+  scaffold_script: scaffold.sh
+execution:
+  model: sonnet
+  max_turns: 30
+  timeout_seconds: 600
+  allowed_tools: [Read, Glob, Grep, Agent, Skill, "Bash(git:*)"]
+  prompt: |
+    I'm about to open a pull request for the current branch. Check it for
+    duplication against my coding standards: compare the branch with `main`
+    and say which new code writes again something that already exists, what
+    to use instead, and the file and line. Don't edit any files.
+    If you have a dedicated reviewer agent for this, use it.
+graders:
+  - type: llm
+    name: flags the renamed copy of an existing helper
+    criteria: >-
+      The response says `_render_price` in shop/receipts/receipt.py
+      duplicates the existing `format_amount` in shop/money, and says to use
+      `format_amount` instead.
+  - type: llm
+    name: flags the hand-rolled standard-library function
+    criteria: >-
+      The response says `_tally_statuses` in shop/orders/status_report.py
+      hand-rolls counting that the Python standard library provides, and says
+      to use `collections.Counter`.
+  - type: llm
+    name: accepts the look-alike business rule
+    criteria: >-
+      The response does not report `loyalty_credit_cents` in
+      shop/loyalty/credit.py as duplication to fix, and does not ask to merge
+      it with `late_fee_cents` or to share a helper between them. Saying
+      nothing about it passes, and so does saying that the two look alike but
+      are separate rules that should stay apart.
+  - type: tool_used
+    name: ran the duplication-reviewer
+    tool: Agent
+    input_match: duplication-reviewer
+    arm: with-only

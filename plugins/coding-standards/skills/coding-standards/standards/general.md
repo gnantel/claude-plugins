@@ -348,3 +348,60 @@ def render_receipt(order):
 
 def _format_header(order): ...
 ```
+
+## G15. Don't duplicate logic that already exists
+
+Before writing a function, type or behaviour, search for one that already
+does the job: in the repository, in the language's standard library and in
+the project's dependencies (G11). Search for what the code does, not only
+for the name you would give it.
+
+Not acceptable:
+- Reimplementing a function, type or behaviour that already exists in the
+  repository, under the same name or another one, written the same way or
+  differently.
+- Hand-rolling what the standard library or a dependency the project already
+  has provides.
+- Two features growing the same logic separately.
+
+**Why:** copies drift apart. A fix or rule change made in one misses the
+others, and the reader cannot tell whether their differences are deliberate.
+
+To fix it, use what exists. When two features need the same logic, follow
+G10: the feature that owns the concept exposes it through its small surface,
+or the logic becomes a feature of its own, named for its concept. Never move
+it into a `utils` or `common` grab bag.
+
+**Not duplication:** code that looks alike but expresses different rules,
+which can change independently. Two fees that are each a capped percentage
+are two business rules; merging them couples things that only happen to look
+alike today. Likewise, don't replace code with an existing function that
+behaves differently in a case the caller can hit.
+
+Bad (`format_amount` in `money/` already does this, and `Counter` counts):
+
+```python
+def _render_price(minor_units):
+    whole, fraction = divmod(minor_units, 100)
+    return "$" + f"{whole:,}" + "." + str(fraction).zfill(2)
+
+def _tally_statuses(orders):
+    tally = {}
+    for order in orders:
+        if order.status not in tally:
+            tally[order.status] = 0
+        tally[order.status] += 1
+    return tally
+```
+
+Good (call `format_amount(order.total_cents)` where `_render_price` was
+needed):
+
+```python
+from collections import Counter
+
+from shop.money import format_amount
+
+def _tally_statuses(orders):
+    return Counter(order.status for order in orders)
+```
