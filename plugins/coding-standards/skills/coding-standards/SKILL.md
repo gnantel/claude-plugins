@@ -36,6 +36,10 @@ The ones most often missed:
 8. **G14:** narrowest visibility by default: private unless something
    outside the module or class uses it, through the construct or, in
    Python, a leading `_`. Tests are not users.
+9. **G15:** don't duplicate logic. Before writing a helper, search the
+   repository, the standard library and the existing dependencies for what
+   it does, not just its name. Share between features as G10 says, never
+   through a `utils` grab bag. Look-alike code with different rules is fine.
 
 When you finish a change, check your own diff against these rules before
 reporting it done. For a full review, the user runs `/pr-workflow:review-branch`.
