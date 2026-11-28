@@ -1,6 +1,6 @@
 ---
 name: submit-pr
-description: Take the current branch from local review to a pull request that is ready for human review - run review-branch, create the PR linked to its leaf issue, run the Copilot review loop, and report what was raised, fixed and declined. Use when the user asks to submit, open or ship a PR, or when the pr-workflow hook blocks pull request creation.
+description: Take the current branch from local review to a pull request that is ready for human review - run review-branch, create the PR linked to its leaf issue, run the Copilot review loop, file a removal issue for each new feature flag, and report what was raised, fixed and declined. Use when the user asks to submit, open or ship a PR, or when the pr-workflow hook blocks pull request creation.
 argument-hint: "[base-branch] [--fix]"
 ---
 
@@ -120,14 +120,58 @@ Repeat this stage until GitHub reports `MERGEABLE`. Keep what the rebase and
 the repeated stages produced as their own outcome, separate from the earlier
 ones.
 
-## 6. Report
+## 6. File flag removal issues
+
+Do this whenever you are about to report on the PR, however stages 3 to 5
+ended, so it covers the final head. The rules and the issue's format are in
+PR7 of `${CLAUDE_PLUGIN_ROOT}/standards/pull-requests.md`: read it first.
+
+1. **Find the added flags.** First check that local `HEAD` equals the PR's
+   head (`gh pr view --json headRefOid`). If it doesn't, the local diff
+   isn't the PR's: file nothing, report that the flag check didn't run and
+   don't call the PR ready. Otherwise read the diff the PR adds:
+   `git diff <merge-base> HEAD`, where the merge base is
+   `git merge-base HEAD origin/<the PR's base branch>`, so a stacked PR
+   doesn't count its parent's flags. For each flag key the diff newly
+   evaluates, search the merge base (`git grep -F <key> <merge-base>`) and
+   keep the keys PR7 says the branch adds. The project's
+   `.claude/operational.md`, if present, names its flag wrapper. If there
+   are none, create no issue or label, say in the report that the branch
+   adds no flag, and skip the rest of this stage.
+2. **Reuse what exists**, so a repeated run files nothing twice:
+   `gh issue list --label flag-removal --state open --limit 1000 --json number,body`.
+   An open issue is this PR's removal issue for a flag only if its `Flag:`
+   line is exactly the key and its `Pull request:` line is this PR. Don't
+   reuse or change one that names the same key for another PR: name it in
+   the report, for the user to settle.
+3. **File the missing ones.** Make sure the label exists: if
+   `gh label list --search flag-removal --json name` doesn't list
+   `flag-removal`, run
+   `gh label create flag-removal --description "Remove a feature flag"`.
+   For each flag without an issue, write the PR7 body to a file and run
+   `python3 ${CLAUDE_PLUGIN_ROOT}/skills/issues/scripts/issues.py create --title "Remove feature flag <key>" --body-file <path> --label flag-removal`,
+   with no `--parent`.
+4. **Link them from the PR.** Save the current description's text
+   (`gh pr view --json body --jq .body`) to a file, add the missing
+   `Flag removal: #<n> (<key>)` lines, keeping the rest as it is, and run
+   `gh pr edit --body-file <path>`. Then confirm with
+   `gh pr view --json closingIssuesReferences` that the PR still closes only
+   its own issue (a stacked PR still closes none).
+
+If a step fails, go on to the report and say which flags have no linked
+removal issue.
+
+## 7. Report
 
 Check that the branch is still one commit on its base. Run the loop's `status` command (`copilot_review.py status`) on the PR
 for the final head. State that the PR is ready for human review, with its
 link, only if it reports `ready` (Copilot reviewed the final head, no
 threads open), which also covers commits that stages 4 and 5 pushed after
-the loop. Otherwise say so explicitly (which head is unreviewed, how many threads are
-open) and don't call it ready. If the loop stopped early, say why. Cover:
+the loop, the flag check ran, and every flag the branch adds has a removal
+issue linked from the PR description. Otherwise say so explicitly (which
+head is unreviewed, how many threads are open, whether the flag check ran,
+which flags have no linked removal issue) and don't call it ready. If the
+loop stopped early, say why. Cover:
 
 - **Commit:** that the PR reaches human review as one commit, or why it
   doesn't.
@@ -138,4 +182,7 @@ open) and don't call it ready. If the loop stopped early, say why. Cover:
   declined on the commits the loop added, or that the loop added none.
 - **Rebase:** that the PR was already mergeable, or what conflicted, how it
   was resolved and what the review steps raised on the rebased head.
+- **Flag removal:** each flag the branch adds with its removal issue, and
+  any open removal issue for the same key from another PR, or that it adds
+  none.
 - **Left for the user:** open threads, including any from people.

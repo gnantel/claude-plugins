@@ -1,0 +1,81 @@
+schema_version: "1.0"
+name: submit-pr-files-flag-removal-issue
+description: Before reporting a PR ready, submit-pr files a labelled removal issue for a flag the branch adds and links it from the PR, and files nothing for a branch that only reuses an existing flag and adds a setting.
+tags: [submit-pr, feature-flags]
+runs: 1
+context:
+  scaffold_script: scaffold.sh
+execution:
+  model: sonnet
+  max_turns: 40
+  timeout_seconds: 900
+  allowed_tools: [Read, Glob, Grep, Skill, "Bash(git:*)"]
+  prompt: |
+    Finish submit-pr for two pull requests. For both, every stage up to and
+    including making the PR mergeable is done: each is one commit on main,
+    reviewed locally with no findings; Copilot reviewed the final head with
+    no comments, so `copilot_review.py status` reports `ready` with no open
+    threads; the Copilot loop added no commits; and GitHub reports
+    `MERGEABLE`, and each PR's head on GitHub is the local tip of its
+    branch. Carry out whatever submit-pr has left, then give its final
+    report, separately for each PR.
+
+    - PR #12, branch 6-tiered-late-fees (checked out), closes issue #6. Its
+      description is exactly `Closes #6`. Issue #6 in full: "## Scope
+      Charge a higher late fee rate on large amounts, rolled out gradually.
+      ## Out of scope Changing the base rate. ## Done when Amounts over 1000
+      are charged 8% when the rollout is on."
+    - PR #13, branch 7-shorter-email-footer, closes issue #7. Its
+      description is exactly `Closes #7`. Issue #7 in full: "## Scope
+      Limit the new invoice email's footer to a configurable number of
+      lines. ## Out of scope The subject line. ## Done when The new email's
+      footer is at most MAX_FOOTER_LINES lines."
+
+    This repository isn't on GitHub and `gh` is unavailable: don't call it
+    or the GitHub helper scripts, and look nothing up. Wherever a step needs
+    them, give the exact command you would run, with the full contents of
+    any file you would pass to it, and assume it succeeds. The repository
+    has only GitHub's default labels and no open issues besides #6 and #7;
+    the next new issue is #20. Don't check out, edit or commit anything:
+    read PR #13's changes with `git diff main 7-shorter-email-footer`. Don't
+    use `cd`; run one plain command per call.
+graders:
+  - type: llm
+    name: files one labelled removal issue
+    criteria: >-
+      For PR #12 only, the response creates (gives the command to create)
+      exactly one new issue to remove the tiered-late-fees flag, with the
+      label flag-removal, creating that label first because it doesn't exist.
+      The issue is not created as a sub-issue (no --parent) of issue #6.
+  - type: llm
+    name: issue body has parseable fields
+    criteria: >-
+      The full body given for the new removal issue has a "## Flag removal"
+      section whose list lines are, in this order, "- Flag:
+      tiered-late-fees", "- Removal condition: fully on for 21 days" (21,
+      from the project's settings), "- Reached 100%: pending",
+      "- Pull request: #12" and "- Feature issue: #6", with nothing else in
+      those values. The body also has a rollout plan in percentage steps
+      ending at 100%.
+  - type: llm
+    name: links the issue from the PR
+    criteria: >-
+      For PR #12 the response gives a gh pr edit command whose new description
+      keeps `Closes #6` and adds a line referring to the removal issue #20,
+      with no Closes, Fixes or Resolves before #20. That step comes before
+      PR #12's final report, and the report names the tiered-late-fees flag
+      with removal issue #20. Because gh is unavailable, it does not matter
+      whether the report calls the PR ready outright or says it is ready once
+      the commands succeed.
+  - type: llm
+    name: files nothing for the branch without a new flag
+    criteria: >-
+      For PR #13 the response creates no issue and no label and does not edit
+      the description. It says the branch adds no flag (treating neither the
+      reused new-invoice-email flag nor the MAX_FOOTER_LINES setting as a new
+      flag) and reports PR #13 ready for human review.
+  - type: tool_used
+    name: ran submit-pr
+    tool: Skill
+    input_match: submit-pr
+    arm: with-only
