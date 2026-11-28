@@ -153,8 +153,14 @@ commits, so a reviewed HEAD with uncommitted fixes would be meaningless):
 git rev-parse HEAD > "$(git rev-parse --path-format=absolute --git-path pr-workflow-reviewed)"
 ```
 
+This command is how the review is recorded, and nothing else writes the
+marker. Run it on its own, before the command that creates the PR: the hook
+checks the marker before a command runs, so a single command that records
+the review and creates the PR is blocked.
+
 Any later commit or amend changes HEAD, so record only after the last
-amend, never by rewriting the marker, and review again before the next PR.
+amend. Before the next PR, review again and record it through this step;
+never just update the marker to the new HEAD.
 
 ## 8. Report the outcome
 

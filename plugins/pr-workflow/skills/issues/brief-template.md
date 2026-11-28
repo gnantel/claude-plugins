@@ -11,7 +11,7 @@ COMMON RULES
 - Keep exactly one commit on the branch: amend every later fix into it with `git commit --amend`, including `review-branch` fixes, and update the message when a fix changes what the commit does. If you end up with several, squash them into one curated commit before the review is recorded.
 - Verify Done when for real, not by reading the code.
 - Ship with `pr-workflow:submit-pr`: local review, PR with `Closes #{number}`, Copilot loop, re-review, conflict check and rebase. Report whether Copilot reviewed the final head and how many threads are open.
-- Never write the review marker by hand. Never merge.
+- Record the review only with `review-branch` step 7, once its conditions hold: run its command, which writes the review marker, on its own, before the command that creates the PR. Never write the marker any other way. Never merge.
 - Ask the user only when a decision is genuinely theirs.
 
 THIS ISSUE

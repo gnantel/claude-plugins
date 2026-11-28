@@ -44,9 +44,10 @@ graders:
       The brief tells the session to keep one commit and amend later fixes
       into it, verify Done when for real, ship with pr-workflow:submit-pr
       (PR with Closes #7, Copilot loop, re-review, conflict check and
-      rebase), report whether Copilot reviewed the final head, never write
-      the review marker by hand, never merge, and ask the user only when a
-      decision is theirs.
+      rebase), report whether Copilot reviewed the final head, record the
+      review only with review-branch step 7, running its command on its own
+      before the command that creates the PR, never merge, and ask the user
+      only when a decision is theirs.
   - type: llm
     name: fills in what it knows
     criteria: >-
