@@ -12,6 +12,9 @@ execution:
   allowed_tools: [Read, Glob, Grep, Agent, Skill, "Bash(git:*)", "Bash(gh:*)", "Bash(python3:*)"]
   prompt: |
     Review the current branch.
+
+    Your shell already starts in the repository: don't use `cd`, and run one
+    plain command per Bash call.
 graders:
   - type: llm
     name: stops for the missing issue

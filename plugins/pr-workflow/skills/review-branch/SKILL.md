@@ -36,7 +36,9 @@ Arguments: `$ARGUMENTS`
   look nothing up. Otherwise stop and tell the user if there is none,
   if it is closed, or if it has sub-issues (`is_leaf: false`): every PR
   implements exactly one open leaf issue (rule PR1). Offer to create or
-  split the issue with the `issues` skill.
+  split the issue with the `issues` skill. Stopping means no review of any
+  kind: give no assessment of the changes yourself either, not even a quick
+  or informal one, since there is no scope to judge them against.
 - **Existing PR:** if the branch already has a PR based on the default
   branch, its `gh pr view --json closingIssuesReferences` must be exactly
   that issue. If the link is missing, add `Closes #<n>` to the description
