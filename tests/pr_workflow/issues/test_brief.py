@@ -19,7 +19,9 @@ FIXED_PARTS = [
     "pr-workflow:submit-pr",
     "`Closes #19`",
     "whether Copilot reviewed the final head",
-    "Never write the review marker by hand. Never merge.",
+    "Record the review only with `review-branch` step 7",
+    "on its own, before the command that creates the PR",
+    "Never write the marker any other way. Never merge.",
     "Ask the user only when a decision is genuinely theirs",
 ]
 

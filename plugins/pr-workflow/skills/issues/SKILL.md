@@ -85,8 +85,9 @@ its brief is the strongest lever for getting it to follow the rules.
    comments, fetch and branch from `origin/<default>`, load
    `coding-standards`, one PR per leaf issue, docs describe what is true,
    one commit amended in place, verify Done when for real, ship with
-   `pr-workflow:submit-pr`, never write the review marker or merge, ask only
-   for the user's decisions) live in `brief-template.md` next to this file.
+   `pr-workflow:submit-pr`, record the review only with `review-branch` step
+   7, never merge, ask only for the user's decisions) live in
+   `brief-template.md` next to this file.
    Edit the template to change them for every brief. If the issue isn't on
    GitHub, fill in `{number}`, `{title}` and `{repository}` in the template
    by hand.
