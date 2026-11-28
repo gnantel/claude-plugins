@@ -1,0 +1,54 @@
+schema_version: "1.0"
+name: docs-reviewer-counts
+description: The docs rule flags counts of growing lists in a README and in manifest and skill descriptions, and a pinned version, and keeps a minimum version requirement, a retry limit and a manifest's version field.
+tags: [reviewer, docs]
+runs: 1
+context:
+  scaffold_script: scaffold.sh
+execution:
+  model: sonnet
+  max_turns: 30
+  timeout_seconds: 600
+  allowed_tools: [Read, Glob, Grep, Agent, Skill, "Bash(git:*)"]
+  prompt: |
+    I'm about to open a pull request for the current branch. Review the docs
+    it changes, including manifest and skill descriptions, against my
+    documentation standards: compare the branch with `main` and list each
+    thing that should change, with its file and line, and where any detail
+    worth keeping should go. If nothing should change, just say so. Don't
+    edit any files.
+    If you have a dedicated reviewer agent for this, use it.
+graders:
+  - type: llm
+    name: flags the count in the README
+    criteria: >-
+      The response flags the README.md text saying the plugin ships four
+      reviewers as a hard-coded count that will go stale.
+  - type: llm
+    name: flags the count in the manifest description
+    criteria: >-
+      The response flags the description in .claude-plugin/plugin.json for
+      hard-coding the number of reviewers.
+  - type: llm
+    name: flags the count in the skill description
+    criteria: >-
+      The response flags the description in skills/lint/SKILL.md for
+      hard-coding the number of lint rules.
+  - type: llm
+    name: flags the pinned version
+    criteria: >-
+      The response flags README.md for naming a specific version of the ruff
+      tool, 0.6.9.
+  - type: llm
+    name: keeps the numbers that may stay
+    criteria: >-
+      The response does not ask to remove or change any of these: the
+      requirement of Python 3.11 or later, the limit that a review stops after
+      3 failed attempts, and the "version" field of
+      .claude-plugin/plugin.json. Saying nothing about them passes, and so does
+      saying they are fine.
+  - type: tool_used
+    name: ran the docs-reviewer
+    tool: Agent
+    input_match: docs-reviewer
+    arm: with-only

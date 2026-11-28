@@ -1,0 +1,53 @@
+schema_version: "1.0"
+name: docs-reviewer-changelog
+description: The docs rule flags a README used as a changelog, keeps a sentence that describes behaviour with the word "previous", and leaves an unchanged line alone.
+tags: [reviewer, docs]
+runs: 1
+context:
+  scaffold_script: scaffold.sh
+execution:
+  model: sonnet
+  max_turns: 30
+  timeout_seconds: 600
+  allowed_tools: [Read, Glob, Grep, Agent, Skill, "Bash(git:*)"]
+  prompt: |
+    I'm about to open a pull request for the current branch. Review the docs
+    it changes against my documentation standards: compare the branch with
+    `main` and list each thing that should change, with its file and line, and
+    where any detail worth keeping should go. If nothing should change, just
+    say so. Don't edit any files.
+    If you have a dedicated reviewer agent for this, use it.
+graders:
+  - type: llm
+    name: flags the list of recent changes
+    criteria: >-
+      The response says the "Recent changes" section added to README.md should
+      come out of the README because docs shouldn't be a changelog or record
+      history.
+  - type: llm
+    name: flags changelog wording in prose
+    criteria: >-
+      The response says that the README.md sentence saying reports are now
+      written as CSV, previously as JSON, is changelog or history wording, and
+      that it should state only what is true, that reports are written as CSV.
+  - type: llm
+    name: keeps the behaviour that mentions a previous request
+    criteria: >-
+      This is about one README.md sentence only: "A failed upload retries the
+      previous request once before the run stops." Fail only if the response
+      says that this sentence is history or changelog wording that should be
+      removed or reworded. Pass otherwise, including when the response never
+      mentions retries or uploads. What it says about other sentences, such as
+      the one with "previously they were JSON", doesn't count.
+  - type: llm
+    name: reports only changed lines
+    criteria: >-
+      The response does not list the README.md sentence saying the importer now
+      accepts gzipped files as something this branch should change. The branch
+      doesn't touch that line. Saying nothing about it passes, and so does
+      mentioning it only to say it is unchanged and outside the review.
+  - type: tool_used
+    name: ran the docs-reviewer
+    tool: Agent
+    input_match: docs-reviewer
+    arm: with-only
