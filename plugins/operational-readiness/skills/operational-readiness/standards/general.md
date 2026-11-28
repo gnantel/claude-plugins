@@ -222,7 +222,8 @@ the same request or from a loop, is a violation.
 - The default is off: the old behavior.
 - The flag is checked at one clear decision point, not scattered through
   the code.
-- Both paths are tested.
+- Both paths are tested. Testing each path at the decision point is enough:
+  the gate needs no further tests through its callers.
 - The flag's name follows the project's naming scheme.
 - The chosen path is observable: a metric label (bounded, OM3) or a span
   attribute (OT3) shows which path ran.

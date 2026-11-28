@@ -41,10 +41,15 @@ Run git commands from the repository root as plain `git ...` commands, with no
      once while building that snapshot is fine.
    - A gate that defaults on, is checked in several scattered places, has
      only one path tested, breaks the project's naming scheme, or leaves the
-     chosen path invisible in metrics or span attributes (OF6).
+     chosen path invisible in metrics or span attributes (OF6). Tests of each
+     path at the decision point are enough: don't ask for more tests of the
+     gate through its callers.
    - Gated code where the old and new paths are interleaved, or the flag is
      passed through unrelated layers, so removing it is not mechanical (OF7).
 4. For each finding, show the corrected code using the project's flag setup.
+   When a fix adds a gate, say in words that the flag defaults off, keeping
+   the old behavior: a reader must not have to infer it from the code or the
+   wrapper.
 
 ## Output
 

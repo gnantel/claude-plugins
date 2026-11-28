@@ -53,8 +53,14 @@ graders:
       counter or `tests/test_pricing.py`): it is read from the request's
       snapshot, defaults off, has separate old and new paths, shows which path
       ran and has both paths tested. Saying nothing about it, or calling it
-      fine, counts as accepting it. Findings about other code, such as
-      `summarize_order` or the loyalty discount, do not count against it.
+      fine, counts as accepting it. Only a finding that asks to
+      change or add something for this gate itself counts against it, including
+      asking for more tests of it. Findings about other code, such as
+      `summarize_order` or the loyalty discount, do not count against it, even
+      when they name this gate or its files for contrast: saying that other
+      changes lack the tests in `tests/test_pricing.py` or the path counter that
+      the tax engine has, and asking to add them for those other changes, is
+      not a finding against this gate.
   - type: tool_used
     name: ran the feature-flag-reviewer
     tool: Agent
