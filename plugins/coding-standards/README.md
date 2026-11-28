@@ -22,6 +22,7 @@ narrow style reviewers that join `/pr-workflow:review-branch`.
 | Reviewer | Checks |
 |---|---|
 | `comments-reviewer` | Comments, file headers and API docs |
+| `docs-reviewer` | Markdown docs and manifest and skill descriptions: clear, not exhaustive, nothing that goes stale |
 | `duplication-reviewer` | Logic that already exists in the repository, the standard library or a dependency |
 | `naming-reviewer` | Function names, extraction quality and variable names |
 | `organization-reviewer` | Feature-based organization and narrow visibility |

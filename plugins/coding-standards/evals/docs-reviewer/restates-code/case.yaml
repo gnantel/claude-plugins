@@ -1,0 +1,45 @@
+schema_version: "1.0"
+name: docs-reviewer-restates-code
+description: The docs rule flags a README that walks through the code file by file and step by step, says where its detail goes, and keeps the purpose, usage and a design decision.
+tags: [reviewer, docs]
+runs: 1
+context:
+  scaffold_script: scaffold.sh
+execution:
+  model: sonnet
+  max_turns: 30
+  timeout_seconds: 600
+  allowed_tools: [Read, Glob, Grep, Agent, Skill, "Bash(git:*)"]
+  prompt: |
+    I'm about to open a pull request for the current branch. Review the docs
+    it changes against my documentation standards: compare the branch with
+    `main` and list each thing that should change, with its file and line, and
+    where any detail worth keeping should go. If nothing should change, just
+    say so. Don't edit any files.
+    If you have a dedicated reviewer agent for this, use it.
+graders:
+  - type: llm
+    name: flags the walkthrough of the code
+    criteria: >-
+      The response says that the part of README.md walking through the files,
+      functions and internal steps of the code restates the code and should be
+      removed or cut down.
+  - type: llm
+    name: says where the detail goes
+    criteria: >-
+      About the walkthrough it asks to remove from README.md, the response says
+      where any detail worth keeping belongs (such as a header comment in a
+      source file, or a README in the sync directory), or says that the code
+      already says it, so it needs no new home.
+  - type: llm
+    name: keeps purpose, usage and the decision
+    criteria: >-
+      The response does not ask to remove any of these from README.md: the
+      opening statement of what the tool is for, the command that runs it, and
+      the explanation that contacts are never deleted because the billing
+      system reads the same address book. Saying nothing about them passes.
+  - type: tool_used
+    name: ran the docs-reviewer
+    tool: Agent
+    input_match: docs-reviewer
+    arm: with-only

@@ -244,6 +244,59 @@ conflicts with them. For example, Rust tests stay in separate files (RS4)
 even though inline test modules are idiomatic, and Python functions get no
 docstrings in applications (G6b).
 
+## G12. Docs are clear, not exhaustive
+
+Applies to READMEs and other Markdown docs, and to the description fields of
+manifests and skills. Code comments stay with G6.
+
+- **Clear, not exhaustive.** A README explains the module's purpose, how to
+  use it, and the key concepts and decisions a reader can't see quickly in
+  the code. It doesn't put the code into words: no walkthrough of every file,
+  function or internal step. Steps the reader performs, such as installing,
+  configuring and running, are usage.
+- **Detail lives close to the code.** A subdirectory or module that needs
+  more detail gets its own README, rather than the top-level README growing.
+  What is unique to one file goes in its header comment (G6a).
+- **Never a changelog.** No "now", "previously", "no longer", "added in",
+  "was changed to" or lists of recent changes. Say what is true; history
+  belongs in git, pull requests and issues. The words are only a signal:
+  "the previous request" in a description of behaviour is not history.
+- **Nothing that goes stale on every change.** No specific versions, except
+  a minimum supported version stated as a requirement ("Python 3.12 or
+  later"), and no counts of things that grow, such as reviewers, rules,
+  skills, files or tests. Name the group instead: "the style reviewers", not
+  how many there are. Numbers that are part of the behaviour, such as limits,
+  timeouts and ports, are fine.
+
+**Why:** docs that restate the code or record its history take longer to
+read, drift out of date, and bury what the reader came for.
+
+**Exceptions:** files whose purpose is history or a dated record (a
+changelog or release notes file, a decision record), license texts, and
+generated or vendored docs. Instructions written for an agent to follow (the
+bodies of skills, agents and commands, `CLAUDE.md`) and the rule files they
+load are not docs; their description fields are.
+
+Bad:
+
+```markdown
+## Exporter
+
+The exporter now writes Parquet (previously CSV). `export.py` calls
+`load_rows`, then `to_batches`, then `write_file` for each batch. It has
+14 tests.
+```
+
+Good:
+
+```markdown
+## Exporter
+
+Writes each day's orders as Parquet for the analytics team. Run
+`just export <date>`. Rows are written in batches so that memory stays flat
+on large days.
+```
+
 ## G13. Order code top-down in call order (the stepdown rule)
 
 A file reads like a narrative: the public API comes first, and each public

@@ -28,18 +28,21 @@ The ones most often missed:
    feature it belongs to; no top-level `services/`, `models/` or `utils/`.
 6. **G11:** write idiomatic code for the language; when unsure, work out the
    idiomatic way first. The explicit rules above win over idiom.
-7. **G13:** order code top-down in call order: public functions in the
+7. **G12:** docs and descriptions say what is true: purpose, usage and key
+   decisions, not a walkthrough of the code. No changelog wording, specific
+   versions (a minimum requirement is fine) or counts of things that grow.
+8. **G13:** order code top-down in call order: public functions in the
    order a caller uses them, each followed by the private helpers it calls
    that aren't already above it, depth first. A second public function goes
    after the first one's whole helper tree. A utility used all over the file
    goes at the bottom.
-8. **G14:** narrowest visibility by default: private unless something
+9. **G14:** narrowest visibility by default: private unless something
    outside the module or class uses it, through the construct or, in
    Python, a leading `_`. Tests are not users.
-9. **G15:** don't duplicate logic. Before writing a helper, search the
-   repository, the standard library and the existing dependencies for what
-   it does, not just its name. Share between features as G10 says, never
-   through a `utils` grab bag. Look-alike code with different rules is fine.
+10. **G15:** don't duplicate logic. Before writing a helper, search the
+    repository, the standard library and the existing dependencies for what
+    it does, not just its name. Share between features as G10 says, never
+    through a `utils` grab bag. Look-alike code with different rules is fine.
 
 When you finish a change, check your own diff against these rules before
 reporting it done. For a full review, the user runs `/pr-workflow:review-branch`.

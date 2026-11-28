@@ -1,0 +1,31 @@
+schema_version: "1.0"
+name: docs-reviewer-concise
+description: The docs rule passes a concise README with purpose, usage, a design decision, a minimum version requirement and behaviour limits, with no findings.
+tags: [reviewer, docs]
+runs: 1
+context:
+  scaffold_script: scaffold.sh
+execution:
+  model: sonnet
+  max_turns: 30
+  timeout_seconds: 600
+  allowed_tools: [Read, Glob, Grep, Agent, Skill, "Bash(git:*)"]
+  prompt: |
+    I'm about to open a pull request for the current branch. Review the docs
+    it changes against my documentation standards: compare the branch with
+    `main` and list each thing that should change, with its file and line, and
+    where any detail worth keeping should go. If nothing should change, just
+    say so. Don't edit any files.
+    If you have a dedicated reviewer agent for this, use it.
+graders:
+  - type: llm
+    name: passes with no findings
+    criteria: >-
+      The response concludes that the docs need no changes. It asks for no
+      change to README.md, not even as an optional, minor or nice-to-have
+      suggestion. Explaining why parts of it are fine passes.
+  - type: tool_used
+    name: ran the docs-reviewer
+    tool: Agent
+    input_match: docs-reviewer
+    arm: with-only

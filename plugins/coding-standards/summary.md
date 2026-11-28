@@ -17,6 +17,10 @@ Load it before writing or changing Java, Python, Rust or TypeScript code.
 - Tests live in separate files (Rust: `#[cfg(test)] #[path = "foo_tests.rs"]
   mod tests;` beside `foo.rs`; `tests.rs` beside a `mod.rs`). Never widen visibility or add test-only code for
   testability; interfaces/traits and injection are fine.
+- Docs (READMEs, other Markdown, manifest and skill descriptions) are
+  clear, not exhaustive: purpose, usage and key decisions, not the code in
+  words. Detail goes close to the code. Never a changelog, and no specific
+  versions (a minimum requirement is fine) or counts of things that grow.
 - Order code top-down in call order: public functions in the order a
   caller uses them, each followed by the private helpers it calls that
   aren't already above it, depth first (the second public function goes
