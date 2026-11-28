@@ -14,7 +14,7 @@ creation, and the Copilot review loop.
 | Path | Purpose |
 |---|---|
 | `skills/review-branch/SKILL.md` | `/pr-workflow:review-branch`: runs every enabled review plugin's reviewers in parallel; never creates a PR |
-| `skills/submit-pr/SKILL.md` | `/pr-workflow:submit-pr`: review, create the PR, Copilot loop, re-review of the loop's commits, then report it ready for human review |
+| `skills/submit-pr/SKILL.md` | `/pr-workflow:submit-pr`: review, create the PR, Copilot loop, re-review of the loop's commits, a removal issue for each new feature flag, then report it ready for human review |
 | `skills/issues/` | Issue-first work: find or create the change's leaf issue, split work into sub-issues, brief child sessions, with a helper script |
 | `skills/cleanup/` | `/pr-workflow:cleanup [--dry-run]`: removes local branches whose PR merged, and their clean worktrees; keeps and explains everything else |
 | `skills/copilot-review-loop/` | `/pr-workflow:copilot-review-loop`: addresses Copilot's PR review round after round until it has no new comments |
@@ -33,8 +33,14 @@ creation, and the Copilot review loop.
   branch and `--fix`).
 - Start to finish: `/pr-workflow:submit-pr` runs the review, creates the PR
   with `Closes #<n>`, runs the Copilot loop, reviews again any commits the
-  loop added, and reports the PR ready for human review, with what was
-  raised, fixed and declined.
+  loop added, files a removal issue for each feature flag the branch adds,
+  and reports the PR ready for human review, with what was raised, fixed and
+  declined.
+- Flag removal: each new flag gets an issue labelled `flag-removal`, with
+  fields automation can read, linked from the PR (rule PR7). How long a flag
+  stays fully on before removal comes from the project's
+  `.claude/operational.md`, for example
+  `Remove a flag once it has been fully on for 30 days.`
 - The Copilot review loop (inside `submit-pr`, or run it yourself). It
   waits for Copilot's review, fixes relevant comments or replies with why
   not, pushes, and repeats until Copilot's review of the latest commit has no

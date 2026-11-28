@@ -122,3 +122,72 @@ one change and rebases cleanly.
   history is theirs to allow (PR5).
 - **Exception:** a stacked branch deliberately split into several commits
   keeps them.
+
+## PR7. Every new feature flag has a removal issue
+
+A feature flag is temporary, so the PR that adds one is not reported ready
+for human review until an issue to remove it exists and the PR description
+links it. Each flag a PR adds has its own removal issue, which names that
+PR.
+
+**A branch adds a flag** when its diff makes code evaluate a flag key that
+nothing evaluates on its base. Code evaluates a flag through the
+OpenFeature API, the project's wrapper around it (typically while building
+the request's flag snapshot) or a flag SDK. The key may be a literal or a
+constant. These add no flag: another use of a flag the base already
+evaluates (including moved code), a configuration setting, and a flag that
+only tests evaluate.
+
+**Removal time.** A flag is removed once it has been fully on for the time
+the project's `.claude/operational.md` gives with its flag setup, for
+example `Remove a flag once it has been fully on for 30 days.` If the
+project gives none, the time is 14 days.
+
+**Issue.** Its label is `flag-removal`, its title is
+`Remove feature flag <flag key>`, and it is never a sub-issue: as one, it
+would make the feature's issue a parent while its PR is open (PR1), or
+hold the feature's parent goal open until the removal. Its body:
+
+```markdown
+## Flag removal
+
+- Flag: checkout-new-pricing
+- Removal condition: fully on for 14 days
+- Reached 100%: pending
+- Pull request: #12
+- Feature issue: #6
+
+## Rollout plan
+
+1% → 10% → 50% → 100%
+
+## Scope
+
+Remove the `checkout-new-pricing` flag and the old path it gates, keeping
+the new behaviour. Start once the removal condition is met.
+
+## Out of scope
+
+Changing the new behaviour.
+
+## Done when
+
+Nothing in the code or its configuration refers to `checkout-new-pricing`
+or runs the old path.
+```
+
+- **The `Flag removal` fields are read by automation.** Keep the heading,
+  the field names, their order and one `- <name>: <value>` line per field,
+  with no backticks, links or notes in a value.
+- `Flag` is the key exactly as the code evaluates it.
+- `Removal condition` is `fully on for <n> days`.
+- `Reached 100%` is `pending` until the flag is fully on, then that date as
+  `YYYY-MM-DD`. The removal time counts from it.
+- `Pull request` and `Feature issue` are `#<number>`.
+- The rollout plan is the one the feature's issue or the project states,
+  and `1% → 10% → 50% → 100%` when neither does.
+
+**Link.** The PR description has one line per flag,
+`Flag removal: #<n> (<flag key>)`. It never puts a closing keyword
+(`Closes`, `Fixes`, `Resolves`) before a removal issue: the PR closes only
+its own issue (PR1).
