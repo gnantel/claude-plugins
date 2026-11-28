@@ -1,6 +1,6 @@
 schema_version: "1.0"
 name: submit-pr-rereviews-copilot-commits
-description: When the Copilot loop added a commit that breaks a style rule, submit-pr reviews the new head again and reports the finding before calling the PR ready.
+description: When the Copilot loop added a commit that goes outside the issue, submit-pr reviews the new head again and reports the finding before calling the PR ready.
 tags: [submit-pr, review-branch]
 runs: 1
 context:
@@ -29,6 +29,9 @@ execution:
     The Copilot review loop has just ended. The head before the loop is in
     .git/pre-loop-head. Carry out the stages of submit-pr that follow the
     loop, and report. Do not push or create anything.
+
+    Your shell already starts in the repository: don't use `cd`, and run one
+    plain command per Bash call.
 graders:
   - type: llm
     name: second review runs on the new head
@@ -36,12 +39,12 @@ graders:
       The response notices the loop added a commit (the current head differs
       from the pre-loop head) and runs the branch review again on the new head.
   - type: llm
-    name: reports the style finding before ready
+    name: reports the scope finding before ready
     criteria: >-
-      The response reports a finding about the very long function in
-      src/late_fee.py (function length or structure), under its own
-      re-review stage, and does not call the PR ready for human review while
-      that finding is neither fixed nor declined by the user.
+      The response reports a finding that the change to src/report.py is
+      outside issue #6, under its own re-review stage, and does not call the
+      PR ready for human review while that finding is neither fixed nor
+      declined by the user.
   - type: tool_used
     name: ran review-branch
     tool: Skill
